@@ -8,14 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2026-04-28
 
-### Refactor
-
-- Delete dead _read_pyproject_version helper and stale test
-
-
-
-## [0.1.1] - 2026-04-28
-
 ### Bug Fixes
 
 - Add pull_policy: always so :latest moves on up -d
@@ -24,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Add README badges, status section, and contributor links
+- Add SECURITY.md with vulnerability disclosure policy
+- Add CONTRIBUTING.md with PR workflow and conventional commits
+- Remove duplicate Updating section in deployment.md
+- Remove self-update sections; add migration guide
 - Add RELEASE.md and git-cliff config for changelog automation
 - Note Compose v2.22+ requirement in dev override
 - Document GHCR first-time public-visibility step
@@ -39,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+- Remove self-update stack — bot is now stateless, updates via orchestrator
 - Switch docker-compose to GHCR registry image; add dev override
 - Add _find_uv helper with PATH fallback for supervised deploys
 - Register /restart and /riavvia commands
@@ -76,6 +74,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Refactor
 
+- Drop unused VersionInfo.is_git field
+- Extract schedule_self_exit to lifecycle module
+- Delete dead _read_pyproject_version helper and stale test
 - Read version from importlib.metadata; bake commit SHA via env
 - Rename _post_init to register_slash_menu, drop dead PTB hook
 

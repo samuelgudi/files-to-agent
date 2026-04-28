@@ -20,7 +20,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Checkout
@@ -68,3 +68,16 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: mode=max
           sbom: true
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Container image: `ghcr.io/${{ github.repository }}:${{ github.ref_name }}`
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full release notes.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

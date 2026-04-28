@@ -17,14 +17,14 @@ Older versions are EOL.
 
 ## Reporting a vulnerability
 
-**Do not open a public issue.** Instead, email:
+**Do not open a public issue.** Use GitHub's private vulnerability reporting:
 
-**(redacted)** with:
-
-- A description of the vulnerability
-- Steps to reproduce (or a proof-of-concept)
-- Affected versions (run `/version` in the bot or check the image tag)
-- Your assessment of severity (Critical / High / Medium / Low)
+1. Go to [`https://github.com/samuelgudi/files-to-agent/security/advisories/new`](https://github.com/samuelgudi/files-to-agent/security/advisories/new)
+2. Fill in the report form with:
+   - A description of the vulnerability
+   - Steps to reproduce (or a proof-of-concept)
+   - Affected versions (run `/version` in the bot or check the image tag)
+   - Your assessment of severity (Critical / High / Medium / Low)
 
 I'll acknowledge receipt within 7 days and aim to release a patched version within 30 days for High/Critical issues, 90 days for Medium/Low.
 

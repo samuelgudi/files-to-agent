@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
@@ -346,3 +346,55 @@ async def test_info_renders(core: Core) -> None:
     msg = upd.message.reply_text.call_args[0][0]
     assert u.id in msg
     assert "draft" in msg
+
+
+# --- Task 16: /pulizia ---
+
+
+async def test_pulizia_no_args_shows_candidates(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_pulizia
+
+    u = core.create_upload(chat_id=10)
+    core.add_file_to_upload(u.id, "x", b"x" * 100)
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = []
+    await handle_pulizia(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert u.id in msg
+
+
+async def test_pulizia_by_ref_deletes(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_pulizia
+
+    u = core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id]
+    await handle_pulizia(upd, ctx)
+
+    from files_to_agent.core import UploadNotFound
+
+    with pytest.raises(UploadNotFound):
+        core.get_upload(u.id)
+
+
+async def test_pulizia_older_than(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_pulizia
+
+    u_old = core.create_upload(chat_id=10)
+    core.confirm_upload(u_old.id)
+    core._clock_state["now"] += timedelta(days=10)  # type: ignore[attr-defined]
+    u_new = core.create_upload(chat_id=10)
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["5g"]
+    await handle_pulizia(upd, ctx)
+
+    from files_to_agent.core import UploadNotFound
+
+    with pytest.raises(UploadNotFound):
+        core.get_upload(u_old.id)
+    assert core.get_upload(u_new.id).id == u_new.id

@@ -21,9 +21,7 @@ If only an ID is present without an action verb ("what's in ID k7m2p9x4?"), use 
 
 ## Resolver endpoint
 
-The resolver runs on the same host as you. URL is configured at install:
-- **Homelab-host (Host):** `http://127.0.0.1:8080`
-- **Samuel/Agent (WSL-host):** `http://127.0.0.1:18080` (or `https://filestoagent.localhost`)
+The resolver runs on the same host as you. Default URL: `http://127.0.0.1:8080`.
 
 Set `FILESTOAGENT_RESOLVER_URL` env var to override. If unset, fall back to `http://127.0.0.1:8080`.
 

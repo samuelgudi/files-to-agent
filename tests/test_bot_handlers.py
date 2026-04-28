@@ -300,3 +300,49 @@ async def test_contesto_no_args_shows_usage(core: Core) -> None:
     ctx.args = []
     await handle_contesto(upd, ctx)
     assert "Uso" in upd.message.reply_text.call_args[0][0]
+
+
+# --- Task 15: /lista + /info ---
+
+async def test_lista_empty(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_lista
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    await handle_lista(upd, ctx)
+    assert "Nessun upload" in upd.message.reply_text.call_args[0][0]
+
+
+async def test_lista_shows_uploads(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_lista
+
+    u1 = core.create_upload(chat_id=10)
+    core.confirm_upload(u1.id)
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    await handle_lista(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert u1.id in msg
+
+
+async def test_info_not_found(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_info
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["nope"]
+    await handle_info(upd, ctx)
+    assert "Upload non trovato" in upd.message.reply_text.call_args[0][0]
+
+
+async def test_info_renders(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_info
+
+    u = core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id]
+    await handle_info(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert u.id in msg
+    assert "draft" in msg

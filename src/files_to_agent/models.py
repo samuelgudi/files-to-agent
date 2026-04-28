@@ -1,11 +1,11 @@
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
 
-class UploadStatus(str, Enum):
+class UploadStatus(StrEnum):
     DRAFT = "draft"
     CONFIRMED = "confirmed"
     USED = "used"
@@ -23,6 +23,7 @@ class Upload(BaseModel):
     size_bytes: int
     file_count: int
     status: UploadStatus
+    context: str | None = None
 
     @property
     def is_active_draft(self) -> bool:

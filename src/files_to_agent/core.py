@@ -54,6 +54,7 @@ def _row_to_upload(row: sqlite3.Row) -> Upload:
         size_bytes=row["size_bytes"],
         file_count=row["file_count"],
         status=UploadStatus(row["status"]),
+        context=row["context"],
     )
 
 

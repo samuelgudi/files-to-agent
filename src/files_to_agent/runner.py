@@ -6,7 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from telegram.ext import Application
 
-from files_to_agent.bot.app import build_application
+from files_to_agent.bot.app import build_application, register_slash_menu
 from files_to_agent.config import Settings
 from files_to_agent.core import Core
 from files_to_agent.db import connect, init_schema
@@ -53,6 +53,9 @@ async def run(settings: Settings | None = None) -> None:
 
     bot = components.bot_app
     await bot.initialize()
+    # PTB only auto-runs post_init from run_polling/run_webhook; we manage the
+    # lifecycle manually (co-hosted with FastAPI), so register the menu directly.
+    await register_slash_menu(bot)
     await bot.start()
     await bot.updater.start_polling()
     log.info("bot polling started")

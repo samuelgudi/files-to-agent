@@ -53,16 +53,6 @@ docker network create agent-net
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
-### Updating
-
-Manual:
-```bash
-docker compose pull
-docker compose up -d
-```
-
-Automatic: install [Watchtower](https://containrrr.dev/watchtower/) on the host. It watches your container for newer image tags and applies them automatically. The bot itself is stateless — Watchtower restarts are safe.
-
 ### Networking
 
 The agent (Hermes / Agent) container should join the same `agent-net` network. From the agent it reaches the resolver at `http://files-to-agent:8080`. The staging files appear in `./data/staging/` on the host — mount the same path into the agent container so it can read them.

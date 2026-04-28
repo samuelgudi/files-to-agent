@@ -12,6 +12,8 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/src"
+ARG COMMIT_SHA=unknown
+ENV FILES_TO_AGENT_COMMIT_SHA=${COMMIT_SHA}
 USER app
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \

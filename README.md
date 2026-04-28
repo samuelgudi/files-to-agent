@@ -34,7 +34,7 @@ docker compose up -d --build
 
 Mount `./data/staging` into your agent container so it can read the files.
 
-## Telegram commands (Italian UI)
+## Telegram commands
 
 | Command | Effect |
 |---|---|

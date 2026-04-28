@@ -1,9 +1,9 @@
 FROM python:3.12-slim AS builder
 WORKDIR /app
 RUN pip install --no-cache-dir uv==0.5.14
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 COPY src ./src
-RUN uv sync --no-dev --frozen 2>/dev/null || uv sync --no-dev
+RUN uv sync --no-dev --frozen
 
 FROM python:3.12-slim
 WORKDIR /app

@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 
-class UploadFolderExists(Exception):
+class UploadFolderExists(Exception):  # noqa: N818
     pass
 
 

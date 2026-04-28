@@ -1,0 +1,69 @@
+name: Bug Report
+description: Something isn't working as documented
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill in the fields below — generic reports without reproduction steps are hard to act on.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What does `/version` say in the bot?
+      placeholder: "files-to-agent 0.1.1, sha-abc1234"
+    validations:
+      required: true
+  - type: dropdown
+    id: deploy_mode
+    attributes:
+      label: Deploy mode
+      options:
+        - Docker (registry image)
+        - Docker (build from source)
+        - process-compose
+        - Standalone Python
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: When I send /pulizia, the bot should show inline buttons for each upload.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      placeholder: The bot showed a list of uploads but no buttons appeared. Tapping the text did nothing.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. /nuova
+        2. Send a file
+        3. /conferma
+        4. /pulizia
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Run `docker logs files-to-agent` (or equivalent for your deploy) and paste any errors or warnings.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: config
+    attributes:
+      label: Notable env / config
+      description: Any non-default `.env` values that might be relevant. **Redact your BOT_TOKEN.**
+      render: shell
+    validations:
+      required: false

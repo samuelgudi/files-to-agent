@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest a new command, behavior, or capability
+labels: [enhancement, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the **problem**, not the solution. The "what should the bot do" question is easier to discuss when I know what you're trying to achieve.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: When uploading large batches, I lose track of which uploads are for which agent task.
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What workaround are you using today?
+      placeholder: I prefix file names with `[task-name]_` but it's manual and error-prone.
+    validations:
+      required: false
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution (optional)
+      placeholder: Add a `/tag <name>` command that attaches a tag to the active draft and shows it in `/lista`.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      placeholder: Use `/contesto` for the same purpose — but `/contesto` is free-form text that the agent reads, whereas tags would be for filtering.
+    validations:
+      required: false

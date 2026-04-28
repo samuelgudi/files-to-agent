@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / discussion
+    url: https://github.com/samuelgudi/files-to-agent/discussions
+    about: Use Discussions for usage questions, ideas, and general help.
+  - name: Security vulnerability
+    url: https://github.com/samuelgudi/files-to-agent/security/policy
+    about: Report security issues privately, not via public issues.

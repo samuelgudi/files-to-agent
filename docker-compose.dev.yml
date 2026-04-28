@@ -1,0 +1,8 @@
+# Development override — builds the image locally instead of pulling from GHCR.
+# Use with: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+services:
+  files-to-agent:
+    build: .
+    image: files-to-agent:dev
+    pull_policy: build

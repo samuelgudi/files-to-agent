@@ -1,7 +1,6 @@
 services:
   files-to-agent:
-    build: .
-    image: files-to-agent:latest
+    image: ghcr.io/samuelgudi/files-to-agent:latest
     container_name: files-to-agent
     restart: unless-stopped
     env_file: .env
@@ -11,6 +10,7 @@ services:
       - ./data:/data
       # Update-flag volume — bot writes ./update-flag/update.requested
       # which the host script (scripts/update-host.sh) polls.
+      # NOTE: This mount is removed in Phase 3 alongside the self-update stack.
       - ./update-flag:/var/lib/files-to-agent
     expose:
       - "8080"

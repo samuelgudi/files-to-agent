@@ -566,15 +566,6 @@ async def test_version_owner_only(core: Core) -> None:
     assert "proprietario" in _last_text(upd) or "owner" in _last_text(upd).lower()
 
 
-async def test_update_owner_only(core: Core) -> None:
-    from files_to_agent.bot.handlers import handle_update
-
-    upd = _fake_update(user_id=42, chat_id=10)
-    ctx = _fake_context(core, allowed=[1, 42])
-    await handle_update(upd, ctx)
-    assert "proprietario" in _last_text(upd) or "owner" in _last_text(upd).lower()
-
-
 async def test_restart_owner_only(core: Core) -> None:
     from files_to_agent.bot.handlers import handle_restart
 
@@ -584,61 +575,23 @@ async def test_restart_owner_only(core: Core) -> None:
     assert "proprietario" in _last_text(upd) or "owner" in _last_text(upd).lower()
 
 
-async def test_restart_supervised_calls_schedule_exit(core: Core, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+async def test_restart_calls_schedule_exit(core: Core, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from files_to_agent.bot import handlers as handlers_mod
 
     called = {"exit": False}
 
-    def _fake_exit() -> None:
-        called["exit"] = True
-
-    monkeypatch.setattr(handlers_mod, "detect_mode", lambda: "supervised_git")
-    monkeypatch.setattr(handlers_mod, "schedule_self_exit", _fake_exit)
-
-    upd = _fake_update(user_id=1, chat_id=10)
-    ctx = _fake_context(core, allowed=[1])
-    await handlers_mod.handle_restart(upd, ctx)
-
-    assert called["exit"] is True
-    assert "Riavvio" in _last_text(upd) or "Restart" in _last_text(upd)
-
-
-async def test_restart_docker_calls_schedule_exit(core: Core, monkeypatch) -> None:  # type: ignore[no-untyped-def]
-    from files_to_agent.bot import handlers as handlers_mod
-
-    called = {"exit": False}
-
-    def _fake_exit() -> None:
-        called["exit"] = True
-
-    monkeypatch.setattr(handlers_mod, "detect_mode", lambda: "docker")
-    monkeypatch.setattr(handlers_mod, "schedule_self_exit", _fake_exit)
-
-    upd = _fake_update(user_id=1, chat_id=10)
-    ctx = _fake_context(core, allowed=[1])
-    await handlers_mod.handle_restart(upd, ctx)
-
-    assert called["exit"] is True
-
-
-async def test_restart_bare_git_warns_no_supervisor(core: Core, monkeypatch) -> None:  # type: ignore[no-untyped-def]
-    from files_to_agent.bot import handlers as handlers_mod
-
-    called = {"exit": False}
-
-    monkeypatch.setattr(handlers_mod, "detect_mode", lambda: "bare_git")
     monkeypatch.setattr(
-        handlers_mod, "schedule_self_exit", lambda: called.__setitem__("exit", True)
+        handlers_mod, "schedule_self_exit",
+        lambda: called.__setitem__("exit", True),
     )
 
     upd = _fake_update(user_id=1, chat_id=10)
     ctx = _fake_context(core, allowed=[1])
     await handlers_mod.handle_restart(upd, ctx)
 
-    assert called["exit"] is False
+    assert called["exit"] is True
     text = _last_text(upd)
-    # Reuses update_no_supervisor — Italian wording "supervisore" or English "supervisor".
-    assert "supervisor" in text.lower()
+    assert "Riavvio" in text or "Restart" in text
 
 
 # ---------- kb_cleanup_items factory ----------

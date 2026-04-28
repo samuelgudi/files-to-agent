@@ -32,8 +32,7 @@ _IT: dict[str, str] = {
         "• /pulizia <i>id|nome</i> — elimina un upload specifico\n\n"
         "<b>Sistema</b>\n"
         "• /lingua — cambia lingua (italiano / english)\n"
-        "• /version — versione corrente e aggiornamenti disponibili\n"
-        "• /update — aggiorna il bot all'ultima versione (solo proprietario)\n"
+        "• /version — versione corrente (solo proprietario)\n"
         "• /riavvia — riavvia il bot (solo proprietario)"
     ),
     "not_authorized": "Non sei autorizzato a usare questo bot.",
@@ -113,8 +112,6 @@ _IT: dict[str, str] = {
     "btn_context": "🏷️ Contesto",
     "btn_language": "🌐 Lingua / Language",
     "btn_help": "📖 Guida",
-    "btn_update_now": "⬆️ Aggiorna ora",
-    "btn_update_later": "Più tardi",
     # Language
     "language_prompt": "🌐 Scegli la lingua / Choose your language:",
     "language_set_it": "✓ Lingua impostata: <b>Italiano</b>",
@@ -144,41 +141,10 @@ _IT: dict[str, str] = {
     "hint_6": "💡 Liberi spazio con /pulizia (per età o per nome).",
     "hint_7": "💡 Vedi tutti i tuoi upload con /lista.",
     "hint_8": "💡 Il menu dei comandi è sempre accanto al campo di testo (icona /).",
-    # Version / update
+    # Version
     "version_block": (
         "📦 <b>files-to-agent {version}</b>\n"
-        "Commit: <code>{sha}</code>\n"
-        "Modalità: {mode}\n\n"
-        "{status}"
-    ),
-    "version_up_to_date": "✅ Sei aggiornato.",
-    "version_behind": "🆕 {n} nuovi commit su origin/main.",
-    "version_unknown": "ℹ️ Impossibile verificare upstream (offline o non in un git checkout).",
-    "update_confirm": (
-        "Vuoi aggiornare ora?\n"
-        "Il bot eseguirà <code>git pull</code> e si riavvierà automaticamente."
-    ),
-    "update_starting": "⬆️ Aggiornamento in corso… Il bot si riavvierà a breve.",
-    "update_no_changes": "Nessun aggiornamento disponibile.",
-    "update_failed": "✗ Aggiornamento fallito:\n<pre>{error}</pre>",
-    "update_docker_instructions": (
-        "🐳 Stai girando in Docker. Il bot non può aggiornarsi da solo.\n\n"
-        "Sul server, esegui:\n"
-        "<pre>docker compose pull\ndocker compose up -d</pre>\n\n"
-        "Oppure abilita lo script <code>scripts/update-host.sh</code> "
-        "(vedi README) per aggiornamenti automatici via bottone."
-    ),
-    "update_docker_triggered": (
-        "🐳 Richiesta di aggiornamento inviata all'host.\n"
-        "Lo script sull'host eseguirà il pull e il restart entro pochi secondi."
-    ),
-    "update_no_supervisor": (
-        "⚠️ Nessun supervisore rilevato (no Docker, no systemd, no process-compose).\n"
-        "Aggiorna manualmente: <code>git pull && uv sync</code> e poi riavvia il bot."
-    ),
-    "update_notify_daily": (
-        "🆕 Sono disponibili {n} nuovi commit su origin/main.\n"
-        "Usa /update quando vuoi aggiornare."
+        "Commit: <code>{sha}</code>"
     ),
     "restart_starting": "🔄 Riavvio in corso… Il bot tornerà online tra qualche secondo.",
 }
@@ -212,8 +178,7 @@ _EN: dict[str, str] = {
         "• /cleanup <i>id|name</i> — delete a specific upload\n\n"
         "<b>System</b>\n"
         "• /language — change language (English / italiano)\n"
-        "• /version — current version and available updates\n"
-        "• /update — update the bot to the latest version (owner only)\n"
+        "• /version — current version (owner only)\n"
         "• /restart — restart the bot (owner only)"
     ),
     "not_authorized": "You are not authorized to use this bot.",
@@ -291,8 +256,6 @@ _EN: dict[str, str] = {
     "btn_context": "🏷️ Context",
     "btn_language": "🌐 Language / Lingua",
     "btn_help": "📖 Help",
-    "btn_update_now": "⬆️ Update now",
-    "btn_update_later": "Later",
     "language_prompt": "🌐 Choose your language / Scegli la lingua:",
     "language_set_it": "✓ Lingua impostata: <b>Italiano</b>",
     "language_set_en": "✓ Language set: <b>English</b>",
@@ -318,38 +281,7 @@ _EN: dict[str, str] = {
     "hint_8": "💡 The commands menu is always next to the input box (the / icon).",
     "version_block": (
         "📦 <b>files-to-agent {version}</b>\n"
-        "Commit: <code>{sha}</code>\n"
-        "Mode: {mode}\n\n"
-        "{status}"
-    ),
-    "version_up_to_date": "✅ You're up to date.",
-    "version_behind": "🆕 {n} new commits on origin/main.",
-    "version_unknown": "ℹ️ Cannot check upstream (offline or not in a git checkout).",
-    "update_confirm": (
-        "Update now?\n"
-        "The bot will run <code>git pull</code> and restart automatically."
-    ),
-    "update_starting": "⬆️ Updating… The bot will restart in a moment.",
-    "update_no_changes": "No update available.",
-    "update_failed": "✗ Update failed:\n<pre>{error}</pre>",
-    "update_docker_instructions": (
-        "🐳 You're running in Docker. The bot can't update itself.\n\n"
-        "On the host, run:\n"
-        "<pre>docker compose pull\ndocker compose up -d</pre>\n\n"
-        "Or enable <code>scripts/update-host.sh</code> "
-        "(see README) for one-button updates."
-    ),
-    "update_docker_triggered": (
-        "🐳 Update request sent to the host.\n"
-        "The host script will pull and restart within a few seconds."
-    ),
-    "update_no_supervisor": (
-        "⚠️ No supervisor detected (no Docker, no systemd, no process-compose).\n"
-        "Update manually: <code>git pull && uv sync</code> then restart the bot."
-    ),
-    "update_notify_daily": (
-        "🆕 {n} new commits available on origin/main.\n"
-        "Run /update when you're ready."
+        "Commit: <code>{sha}</code>"
     ),
     "restart_starting": "🔄 Restarting… The bot will be back in a few seconds.",
 }

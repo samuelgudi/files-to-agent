@@ -1,4 +1,4 @@
-"""Version inspection — reads packaging metadata + commit SHA, queries upstream."""
+"""Version inspection — reads packaging metadata + commit SHA."""
 from __future__ import annotations
 
 import os
@@ -15,7 +15,6 @@ DISTRIBUTION_NAME = "files-to-agent"
 class VersionInfo:
     version: str           # from packaging metadata (importlib.metadata)
     sha: str               # short commit SHA, or "unknown"
-    behind: int | None     # commits behind origin/main, None if undetermined
     is_git: bool
 
 
@@ -76,38 +75,9 @@ def commit_sha() -> str:
     return short_sha()
 
 
-def fetch_upstream() -> bool:
-    """Run `git fetch origin`. Returns True on success.
-
-    NOTE: scheduled for removal in Phase 3 along with the daily-update job.
-    """
-    if not is_git_checkout():
-        return False
-    code, _ = _git("fetch", "origin", "--quiet", timeout=30)
-    return code == 0
-
-
-def commits_behind() -> int | None:
-    """Count of commits on origin/main not in HEAD. None if undetermined.
-
-    NOTE: scheduled for removal in Phase 3 along with the daily-update job.
-    """
-    if not is_git_checkout():
-        return None
-    code, out = _git("rev-list", "--count", "HEAD..origin/main")
-    if code != 0:
-        return None
-    try:
-        return int(out)
-    except ValueError:
-        return None
-
-
-def get_version_info(check_upstream: bool = True) -> VersionInfo:
-    version = _read_distribution_version()
-    sha = commit_sha()
-    is_git = is_git_checkout()
-    behind: int | None = None
-    if is_git and check_upstream and fetch_upstream():
-        behind = commits_behind()
-    return VersionInfo(version=version, sha=sha, behind=behind, is_git=is_git)
+def get_version_info() -> VersionInfo:
+    return VersionInfo(
+        version=_read_distribution_version(),
+        sha=commit_sha(),
+        is_git=is_git_checkout(),
+    )

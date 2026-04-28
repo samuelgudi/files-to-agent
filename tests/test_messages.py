@@ -15,7 +15,7 @@ REQUIRED_KEYS = {
     "cleanup_header", "cleanup_done",
     "disk_warning",
     "language_prompt", "language_set_it", "language_set_en",
-    "version_block", "version_up_to_date",
+    "version_block", "restart_starting",
 }
 
 

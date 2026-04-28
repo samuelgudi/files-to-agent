@@ -15,8 +15,6 @@ Callback codes:
   lang:it      -> set language to Italian
   lang:en      -> set language to English
   help         -> /help
-  update:go    -> run update
-  update:skip  -> dismiss update prompt
   del:<id>     -> delete upload <id> (one tap, no confirm step)
 """
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -132,12 +130,3 @@ def kb_language() -> InlineKeyboardMarkup:
     )
 
 
-def kb_update_confirm(lang: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(t("btn_update_now", lang), callback_data="update:go"),
-                InlineKeyboardButton(t("btn_update_later", lang), callback_data="update:skip"),
-            ],
-        ]
-    )

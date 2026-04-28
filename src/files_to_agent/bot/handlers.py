@@ -19,8 +19,8 @@ from files_to_agent.core import (
     RenameBlockedAfterUse,
     UploadNotFound,
 )
-from files_to_agent.messages import HINT_COUNT, t
 from files_to_agent.lifecycle import schedule_self_exit
+from files_to_agent.messages import HINT_COUNT, t
 from files_to_agent.version import get_version_info
 
 log = logging.getLogger(__name__)
@@ -559,87 +559,34 @@ def _set_chat_lang(
         context.chat_data["lang"] = lang
 
 
-# ---------- /version /update ----------
+# ---------- /version /restart ----------
 
 
 @require_owner
 async def handle_version(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _clear_awaiting(context)
-    info = get_version_info(check_upstream=True)
-    if info.behind is None:
-        status = _tr(update, context, "version_unknown")
-        markup = kb.kb_idle(_lang(update, context))
-    elif info.behind == 0:
-        status = _tr(update, context, "version_up_to_date")
-        markup = kb.kb_idle(_lang(update, context))
-    else:
-        status = _tr(update, context, "version_behind", n=info.behind)
-        markup = kb.kb_update_confirm(_lang(update, context))
+    info = get_version_info()
     await _reply_html(
         update,
         _tr(
             update, context, "version_block",
-            version=info.version, sha=info.sha, mode=mode_description(detect_mode()),
-            status=status,
+            version=info.version, sha=info.sha,
         ),
-        markup,
+        kb.kb_idle(_lang(update, context)),
     )
-
-
-@require_owner
-async def handle_update(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Entry from /update command — show confirm prompt with current state."""
-    _clear_awaiting(context)
-    info = get_version_info(check_upstream=True)
-    if info.behind == 0:
-        await _reply_html(update, _tr(update, context, "update_no_changes"))
-        return
-    await _reply_html(
-        update,
-        _tr(update, context, "update_confirm"),
-        kb.kb_update_confirm(_lang(update, context)),
-    )
-
-
-async def _run_update_flow(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Actually perform the update. Called from the callback handler."""
-    mode = detect_mode()
-    if mode == "docker":
-        if write_docker_flag():
-            await _reply_html(update, _tr(update, context, "update_docker_triggered"))
-        else:
-            await _reply_html(update, _tr(update, context, "update_docker_instructions"))
-        return
-    if mode == "bare_git":
-        await _reply_html(update, _tr(update, context, "update_no_supervisor"))
-        return
-    if mode == "supervised_git":
-        result = run_git_update()
-        if not result.ok:
-            await _reply_html(update, _tr(update, context, "update_failed", error=result.message))
-            return
-        await _reply_html(update, _tr(update, context, "update_starting"))
-        schedule_self_exit()
-        return
-    await _reply_html(update, _tr(update, context, "update_no_supervisor"))
 
 
 @require_owner
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Exit the bot process so the supervisor restarts it.
 
-    Works on supervised_git (systemd / process-compose) and docker
-    (`restart: unless-stopped`). On bare_git / unknown there's no
-    supervisor to bring the bot back, so we refuse with the same warning
-    used by /update.
+    All supported deploy modes (Docker, process-compose, systemd) auto-restart
+    the bot on exit. If you're running the bot bare, /restart will kill it —
+    that's expected; bare runs aren't a supported deployment mode.
     """
     _clear_awaiting(context)
-    mode = detect_mode()
-    if mode in ("supervised_git", "docker"):
-        await _reply_html(update, _tr(update, context, "restart_starting"))
-        schedule_self_exit()
-        return
-    await _reply_html(update, _tr(update, context, "update_no_supervisor"))
+    await _reply_html(update, _tr(update, context, "restart_starting"))
+    schedule_self_exit()
 
 
 # ---------- callback dispatcher ----------
@@ -689,20 +636,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
     elif data == "help":
         await handle_help(update, context)
-    elif data == "update:go":
-        # Only the owner can actually run the update.
-        allowed: list[int] = context.bot_data["allowed_user_ids"]
-        owner_id = allowed[0] if allowed else None
-        user = update.effective_user
-        if user is None or owner_id is None or user.id != owner_id:
-            await _reply_html(update, _tr(update, context, "owner_only"))
-            return
-        await _run_update_flow(update, context)
-    elif data == "update:skip":
-        await _reply_html(
-            update, _tr(update, context, "update_no_changes"),
-            kb.kb_idle(_lang(update, context)),
-        )
     elif data.startswith("del:"):
         upload_id = data[len("del:"):]
         chat = update.effective_chat

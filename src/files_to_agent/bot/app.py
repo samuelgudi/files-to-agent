@@ -1,6 +1,4 @@
 import logging
-import os
-from datetime import time as dtime
 
 from telegram import BotCommand
 from telegram.ext import (
@@ -27,16 +25,10 @@ from files_to_agent.bot.handlers import (
     handle_rename,
     handle_restart,
     handle_start,
-    handle_update,
     handle_version,
 )
 from files_to_agent.config import Settings
 from files_to_agent.core import Core
-from files_to_agent.version import (
-    commits_behind,
-    fetch_upstream,
-    is_git_checkout,
-)
 
 log = logging.getLogger(__name__)
 
@@ -52,8 +44,7 @@ _COMMANDS_IT: list[BotCommand] = [
     BotCommand("info",     "Dettagli di un upload (/info <id|nome>)"),
     BotCommand("pulizia",  "Libera spazio (/pulizia 30g per età)"),
     BotCommand("lingua",   "Cambia lingua (italiano / english)"),
-    BotCommand("version",  "Versione corrente e aggiornamenti"),
-    BotCommand("update",   "Aggiorna il bot (solo proprietario)"),
+    BotCommand("version",  "Versione corrente"),
     BotCommand("riavvia",  "Riavvia il bot (solo proprietario)"),
     BotCommand("help",     "Guida ai comandi"),
     BotCommand("start",    "Mostra il menu principale"),
@@ -70,8 +61,7 @@ _COMMANDS_EN: list[BotCommand] = [
     BotCommand("info",     "Upload details (/info <id|name>)"),
     BotCommand("cleanup",  "Free space (/cleanup 30g by age)"),
     BotCommand("language", "Change language (English / italiano)"),
-    BotCommand("version",  "Current version and updates"),
-    BotCommand("update",   "Update the bot (owner only)"),
+    BotCommand("version",  "Current version"),
     BotCommand("restart",  "Restart the bot (owner only)"),
     BotCommand("help",     "Command reference"),
     BotCommand("start",    "Show the main menu"),
@@ -95,27 +85,6 @@ async def register_slash_menu(app: Application) -> None:
         log.exception("failed to register slash menu")
 
 
-async def _daily_update_check(context) -> None:  # type: ignore[no-untyped-def]
-    """Once a day: fetch origin, DM owner if there are new commits."""
-    if not is_git_checkout():
-        return
-    if not fetch_upstream():
-        return
-    behind = commits_behind()
-    if not behind:
-        return
-    allowed: list[int] = context.bot_data.get("allowed_user_ids", [])
-    if not allowed:
-        return
-    owner_id = allowed[0]
-    from files_to_agent.messages import t  # local import to avoid cycle
-    lang = context.bot_data.get("default_lang", "it")
-    text = t("update_notify_daily", lang, n=behind)
-    try:
-        await context.bot.send_message(chat_id=owner_id, text=text, parse_mode="HTML")
-    except Exception:  # noqa: BLE001
-        log.exception("daily update notify failed")
-
 
 def build_application(settings: Settings, core: Core) -> Application:
     builder = Application.builder().token(settings.bot_token)
@@ -138,7 +107,6 @@ def build_application(settings: Settings, core: Core) -> Application:
     app.add_handler(CommandHandler(["pulizia", "cleanup"], handle_cleanup))
     app.add_handler(CommandHandler(["lingua", "language"], handle_language))
     app.add_handler(CommandHandler(["version"], handle_version))
-    app.add_handler(CommandHandler(["update"], handle_update))
     app.add_handler(CommandHandler(["riavvia", "restart"], handle_restart))
 
     # Inline buttons.
@@ -154,14 +122,5 @@ def build_application(settings: Settings, core: Core) -> Application:
 
     # Plain text — only acts when a button has set user_data['awaiting'].
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_pending_text))
-
-    # Daily upstream check (toggle via UPDATE_CHECK_DAILY env, default on).
-    if os.environ.get("UPDATE_CHECK_DAILY", "true").lower() in ("1", "true", "yes"):
-        if app.job_queue is not None:
-            # Run once a day at 09:00 UTC.
-            app.job_queue.run_daily(_daily_update_check, time=dtime(hour=9, minute=0))
-            log.info("daily update check scheduled at 09:00 UTC")
-        else:
-            log.warning("job_queue not available — install python-telegram-bot[job-queue]")
 
     return app

@@ -41,3 +41,10 @@ def test_init_is_idempotent(tmp_path: Path) -> None:
     conn = connect(db_file)
     init_schema(conn)
     init_schema(conn)  # second call must not raise
+
+
+def test_schema_has_context_column(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "x.db")
+    init_schema(conn)
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(uploads)").fetchall()}
+    assert "context" in cols

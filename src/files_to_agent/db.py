@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS uploads (
     size_bytes    INTEGER NOT NULL DEFAULT 0,
     file_count    INTEGER NOT NULL DEFAULT 0,
     status        TEXT NOT NULL DEFAULT 'draft'
-                  CHECK (status IN ('draft','confirmed','used'))
+                  CHECK (status IN ('draft','confirmed','used')),
+    context       TEXT
 );
 CREATE TABLE IF NOT EXISTS usage_log (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,

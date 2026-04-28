@@ -1,0 +1,18 @@
+services:
+  files-to-agent:
+    build: .
+    image: files-to-agent:latest
+    container_name: files-to-agent
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - agent-net
+    volumes:
+      - ./data:/data
+    expose:
+      - "8080"
+
+networks:
+  agent-net:
+    name: agent-net
+    external: true

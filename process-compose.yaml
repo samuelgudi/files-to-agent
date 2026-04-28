@@ -1,0 +1,21 @@
+version: "0.5"
+
+processes:
+  files-to-agent:
+    command: python -m files_to_agent
+    working_dir: .
+    environment:
+      - "PYTHONPATH=src"
+    is_daemon: false
+    availability:
+      restart: always
+      backoff_seconds: 2
+    readiness_probe:
+      http_get:
+        host: 127.0.0.1
+        port: 8080
+        path: /healthz
+      initial_delay_seconds: 5
+      period_seconds: 10
+      timeout_seconds: 3
+      failure_threshold: 3

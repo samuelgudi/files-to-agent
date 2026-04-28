@@ -77,3 +77,38 @@ def test_write_docker_flag_writes_to_tmp(tmp_path, monkeypatch) -> None:  # type
     assert updater.write_docker_flag() is True
     assert flag_file.exists()
     assert "requested at" in flag_file.read_text()
+
+
+def test_find_uv_returns_which_result_when_available(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setattr(updater.shutil, "which", lambda name: "/some/path/uv" if name == "uv" else None)
+    assert updater._find_uv() == "/some/path/uv"
+
+
+def test_find_uv_falls_back_to_common_install_path(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    # PATH lookup fails.
+    monkeypatch.setattr(updater.shutil, "which", lambda name: None)
+    # Pretend the user's home has ~/.local/bin/uv as an executable file.
+    fake_home = tmp_path / "home"
+    bin_dir = fake_home / ".local" / "bin"
+    bin_dir.mkdir(parents=True)
+    fake_uv = bin_dir / "uv"
+    fake_uv.write_text("#!/bin/sh\necho uv\n")
+    fake_uv.chmod(0o755)
+    monkeypatch.setattr(updater.Path, "home", staticmethod(lambda: fake_home))
+
+    found = updater._find_uv()
+    assert found == str(fake_uv)
+
+
+def test_find_uv_returns_none_when_nothing_found(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setattr(updater.shutil, "which", lambda name: None)
+    # Empty home so no fallback path resolves.
+    fake_home = tmp_path / "empty_home"
+    fake_home.mkdir()
+    monkeypatch.setattr(updater.Path, "home", staticmethod(lambda: fake_home))
+    # Ensure /usr/local/bin/uv is also pretended-absent by giving the function only
+    # the home-relative candidates that we control. The function's third candidate
+    # (/usr/local/bin/uv) might exist on the test host — accept either None or a
+    # string that points to /usr/local/bin/uv.
+    found = updater._find_uv()
+    assert found is None or found == "/usr/local/bin/uv"

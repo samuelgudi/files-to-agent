@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import time
 from dataclasses import dataclass
@@ -57,6 +58,28 @@ def mode_description(mode: DeployMode) -> str:
         "bare_git": "Git checkout (bare)",
         "unknown": "Unknown",
     }.get(mode, "Unknown")
+
+
+def _find_uv() -> str | None:
+    """Locate the `uv` executable, falling back to common install paths.
+
+    Supervised processes (systemd, process-compose) often run with a stripped
+    PATH that excludes ~/.local/bin and ~/.cargo/bin where uv typically lives.
+    Returns an absolute path string if found, or None if uv is missing.
+    """
+    found = shutil.which("uv")
+    if found:
+        return found
+    home = Path.home()
+    candidates = [
+        home / ".local" / "bin" / "uv",
+        home / ".cargo" / "bin" / "uv",
+        Path("/usr/local/bin/uv"),
+    ]
+    for candidate in candidates:
+        if candidate.exists() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
 
 
 def run_git_update() -> UpdateResult:

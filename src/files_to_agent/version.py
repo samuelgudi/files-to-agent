@@ -15,7 +15,6 @@ DISTRIBUTION_NAME = "files-to-agent"
 class VersionInfo:
     version: str           # from packaging metadata (importlib.metadata)
     sha: str               # short commit SHA, or "unknown"
-    is_git: bool
 
 
 def _read_distribution_version() -> str:
@@ -79,5 +78,4 @@ def get_version_info() -> VersionInfo:
     return VersionInfo(
         version=_read_distribution_version(),
         sha=commit_sha(),
-        is_git=is_git_checkout(),
     )

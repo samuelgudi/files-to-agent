@@ -37,7 +37,6 @@ def test_get_version_info_returns_sensible_types() -> None:
     info = version.get_version_info()
     assert isinstance(info.version, str)
     assert isinstance(info.sha, str)
-    assert isinstance(info.is_git, bool)
 
 
 def test_is_git_checkout_returns_bool() -> None:

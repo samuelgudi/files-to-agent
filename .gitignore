@@ -13,3 +13,6 @@ build/
 *.db-shm
 data/
 .DS_Store
+
+# Local-only planning artifacts (kept on disk, not tracked)
+docs/superpowers/

@@ -20,13 +20,7 @@ from files_to_agent.core import (
     UploadNotFound,
 )
 from files_to_agent.messages import HINT_COUNT, t
-from files_to_agent.updater import (
-    detect_mode,
-    mode_description,
-    run_git_update,
-    schedule_self_exit,
-    write_docker_flag,
-)
+from files_to_agent.lifecycle import schedule_self_exit
 from files_to_agent.version import get_version_info
 
 log = logging.getLogger(__name__)

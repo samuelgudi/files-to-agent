@@ -33,7 +33,8 @@ _IT: dict[str, str] = {
         "<b>Sistema</b>\n"
         "• /lingua — cambia lingua (italiano / english)\n"
         "• /version — versione corrente e aggiornamenti disponibili\n"
-        "• /update — aggiorna il bot all'ultima versione (solo proprietario)"
+        "• /update — aggiorna il bot all'ultima versione (solo proprietario)\n"
+        "• /riavvia — riavvia il bot (solo proprietario)"
     ),
     "not_authorized": "Non sei autorizzato a usare questo bot.",
     "owner_only": "Comando riservato al proprietario del bot.",
@@ -179,6 +180,7 @@ _IT: dict[str, str] = {
         "🆕 Sono disponibili {n} nuovi commit su origin/main.\n"
         "Usa /update quando vuoi aggiornare."
     ),
+    "restart_starting": "🔄 Riavvio in corso… Il bot tornerà online tra qualche secondo.",
 }
 
 _EN: dict[str, str] = {
@@ -211,7 +213,8 @@ _EN: dict[str, str] = {
         "<b>System</b>\n"
         "• /language — change language (English / italiano)\n"
         "• /version — current version and available updates\n"
-        "• /update — update the bot to the latest version (owner only)"
+        "• /update — update the bot to the latest version (owner only)\n"
+        "• /restart — restart the bot (owner only)"
     ),
     "not_authorized": "You are not authorized to use this bot.",
     "owner_only": "Owner-only command.",
@@ -348,6 +351,7 @@ _EN: dict[str, str] = {
         "🆕 {n} new commits available on origin/main.\n"
         "Run /update when you're ready."
     ),
+    "restart_starting": "🔄 Restarting… The bot will be back in a few seconds.",
 }
 
 MESSAGES: dict[str, dict[str, str]] = {"it": _IT, "en": _EN}

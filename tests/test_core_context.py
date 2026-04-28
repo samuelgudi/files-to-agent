@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -15,7 +15,7 @@ def core(tmp_path: Path) -> Core:
     return Core(
         conn=conn,
         storage=StagingStorage(tmp_path / "staging"),
-        now=lambda: datetime(2026, 1, 1, tzinfo=timezone.utc),
+        now=lambda: datetime(2026, 1, 1, tzinfo=UTC),
     )
 
 

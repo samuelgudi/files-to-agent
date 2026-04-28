@@ -506,7 +506,11 @@ async def handle_cleanup(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         for r in biggest:
             ref = r.name or r.id
             lines.append(f"  - {ref}  ({r.status.value}, {human_size(r.size_bytes)})")
-        await _reply_html(update, "\n".join(lines), kb.kb_idle(_lang(update, context)))
+        await _reply_html(
+            update,
+            "\n".join(lines),
+            kb.kb_cleanup_items(oldest, biggest, _lang(update, context)),
+        )
         return
 
     arg = args[0]

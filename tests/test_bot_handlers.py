@@ -620,3 +620,26 @@ def test_kb_cleanup_items_empty_returns_empty_keyboard() -> None:
     markup = kb_cleanup_items([], [], lang="it")
     flat = [btn for row in markup.inline_keyboard for btn in row]
     assert flat == []
+
+
+# ---------- cleanup view attaches per-item delete buttons ----------
+
+
+async def test_cleanup_no_args_attaches_per_item_delete_buttons(core: Core) -> None:
+    u1 = core.create_upload(chat_id=10)
+    core.add_file_to_upload(u1.id, "a", b"a" * 100)
+    core.confirm_upload(u1.id)
+    u2 = core.create_upload(chat_id=10)
+    core.add_file_to_upload(u2.id, "b", b"b" * 200)
+    core.confirm_upload(u2.id)
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = []
+    await handle_cleanup(upd, ctx)
+
+    markup = upd.message.reply_text.call_args.kwargs["reply_markup"]
+    flat = [btn for row in markup.inline_keyboard for btn in row]
+    callback_data = {btn.callback_data for btn in flat}
+    assert f"del:{u1.id}" in callback_data
+    assert f"del:{u2.id}" in callback_data

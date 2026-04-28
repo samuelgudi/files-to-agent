@@ -9,10 +9,6 @@ services:
       - agent-net
     volumes:
       - ./data:/data
-      # Update-flag volume — bot writes ./update-flag/update.requested
-      # which the host script (scripts/update-host.sh) polls.
-      # NOTE: This mount is removed in Phase 3 alongside the self-update stack.
-      - ./update-flag:/var/lib/files-to-agent
     expose:
       - "8080"
 

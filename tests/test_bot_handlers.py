@@ -571,3 +571,52 @@ async def test_update_owner_only(core: Core) -> None:
     ctx = _fake_context(core, allowed=[1, 42])
     await handle_update(upd, ctx)
     assert "proprietario" in _last_text(upd) or "owner" in _last_text(upd).lower()
+
+
+# ---------- kb_cleanup_items factory ----------
+
+from files_to_agent.bot.keyboards import kb_cleanup_items
+from files_to_agent.models import Upload, UploadStatus
+
+
+def _fake_upload(upload_id: str, name: str | None = None, size: int = 100) -> Upload:
+    return Upload(
+        id=upload_id,
+        name=name,
+        chat_id=10,
+        status=UploadStatus.CONFIRMED,
+        context=None,
+        file_count=1,
+        size_bytes=size,
+        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+        confirmed_at=datetime(2026, 1, 1, tzinfo=UTC),
+        last_used_at=None,
+    )
+
+
+def test_kb_cleanup_items_one_button_per_unique_upload() -> None:
+    a = _fake_upload("aaaa1111", name="alpha", size=1000)
+    b = _fake_upload("bbbb2222", name=None, size=2000)
+    # Same id appears in both lists — must dedupe to a single button.
+    markup = kb_cleanup_items([a, b], [a], lang="it")
+    flat = [btn for row in markup.inline_keyboard for btn in row]
+    callback_ids = [btn.callback_data for btn in flat]
+    assert callback_ids.count("del:aaaa1111") == 1
+    assert "del:bbbb2222" in callback_ids
+    assert len(flat) == 2
+
+
+def test_kb_cleanup_items_button_text_uses_name_or_id() -> None:
+    a = _fake_upload("aaaa1111", name="alpha", size=1024)
+    b = _fake_upload("bbbb2222", name=None, size=2048)
+    markup = kb_cleanup_items([a], [b], lang="it")
+    flat = [btn for row in markup.inline_keyboard for btn in row]
+    by_id = {btn.callback_data: btn.text for btn in flat}
+    assert "alpha" in by_id["del:aaaa1111"]
+    assert "bbbb2222" in by_id["del:bbbb2222"]
+
+
+def test_kb_cleanup_items_empty_returns_empty_keyboard() -> None:
+    markup = kb_cleanup_items([], [], lang="it")
+    flat = [btn for row in markup.inline_keyboard for btn in row]
+    assert flat == []

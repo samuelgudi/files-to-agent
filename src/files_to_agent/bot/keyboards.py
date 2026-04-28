@@ -17,10 +17,13 @@ Callback codes:
   help         -> /help
   update:go    -> run update
   update:skip  -> dismiss update prompt
+  del:<id>     -> delete upload <id> (one tap, no confirm step)
 """
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from files_to_agent.bot.format import human_size
 from files_to_agent.messages import t
+from files_to_agent.models import Upload
 
 
 def kb_idle(lang: str) -> InlineKeyboardMarkup:
@@ -93,6 +96,28 @@ def kb_list(lang: str) -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+
+def kb_cleanup_items(
+    oldest: list[Upload],
+    biggest: list[Upload],
+    lang: str,  # noqa: ARG001 — reserved for future localised labels
+) -> InlineKeyboardMarkup:
+    """One row per upload — dedupes ids that appear in both oldest and biggest.
+
+    Button text is `🗑 <name-or-id> (<size>)`. Callback data is `del:<id>` —
+    well under Telegram's 64-byte limit since ids are ~8 chars.
+    """
+    seen: set[str] = set()
+    rows: list[list[InlineKeyboardButton]] = []
+    for u in (*oldest, *biggest):
+        if u.id in seen:
+            continue
+        seen.add(u.id)
+        ref = u.name or u.id
+        label = f"🗑 {ref} ({human_size(u.size_bytes)})"
+        rows.append([InlineKeyboardButton(label, callback_data=f"del:{u.id}")])
+    return InlineKeyboardMarkup(rows)
 
 
 def kb_language() -> InlineKeyboardMarkup:

@@ -20,8 +20,10 @@ from files_to_agent.bot.handlers import (
     handle_rename,
     handle_start,
 )
+from files_to_agent.bot.keyboards import kb_cleanup_items
 from files_to_agent.core import Core
 from files_to_agent.db import connect, init_schema
+from files_to_agent.models import Upload, UploadStatus
 from files_to_agent.storage import StagingStorage
 
 
@@ -575,9 +577,6 @@ async def test_update_owner_only(core: Core) -> None:
 
 # ---------- kb_cleanup_items factory ----------
 
-from files_to_agent.bot.keyboards import kb_cleanup_items
-from files_to_agent.models import Upload, UploadStatus
-
 
 def _fake_upload(upload_id: str, name: str | None = None, size: int = 100) -> Upload:
     return Upload(
@@ -643,3 +642,48 @@ async def test_cleanup_no_args_attaches_per_item_delete_buttons(core: Core) -> N
     callback_data = {btn.callback_data for btn in flat}
     assert f"del:{u1.id}" in callback_data
     assert f"del:{u2.id}" in callback_data
+
+
+# ---------- del:<id> callback ----------
+
+
+async def test_callback_del_deletes_upload(core: Core) -> None:
+    u = core.create_upload(chat_id=10)
+    core.add_file_to_upload(u.id, "x", b"x" * 100)
+    core.confirm_upload(u.id)
+
+    upd = _fake_callback_update(user_id=1, chat_id=10, data=f"del:{u.id}")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_callback(upd, ctx)
+
+    from files_to_agent.core import UploadNotFound
+    with pytest.raises(UploadNotFound):
+        core.get_upload(u.id)
+
+
+async def test_callback_del_unknown_id_replies_not_found(core: Core) -> None:
+    upd = _fake_callback_update(user_id=1, chat_id=10, data="del:doesnotexist")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_callback(upd, ctx)
+
+    text_calls = upd.message.reply_text.call_args_list
+    combined = " ".join(
+        (call.args[0] if call.args else call.kwargs.get("text", ""))
+        for call in text_calls
+    )
+    # Reuses the existing info_not_found template.
+    assert "doesnotexist" in combined
+
+
+async def test_callback_del_other_chat_blocked(core: Core) -> None:
+    # Upload created in chat 999 must not be deletable from chat 10.
+    u = core.create_upload(chat_id=999)
+    core.add_file_to_upload(u.id, "x", b"x" * 10)
+    core.confirm_upload(u.id)
+
+    upd = _fake_callback_update(user_id=1, chat_id=10, data=f"del:{u.id}")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_callback(upd, ctx)
+
+    # Upload still exists.
+    assert core.get_upload(u.id).id == u.id

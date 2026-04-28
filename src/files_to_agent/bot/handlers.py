@@ -691,6 +691,28 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             update, _tr(update, context, "update_no_changes"),
             kb.kb_idle(_lang(update, context)),
         )
+    elif data.startswith("del:"):
+        upload_id = data[len("del:"):]
+        chat = update.effective_chat
+        if chat is None:
+            return
+        core = _core(context)
+        try:
+            u = core.find_by_ref(upload_id)
+        except UploadNotFound:
+            await _reply_html(update, _tr(update, context, "info_not_found", ref=upload_id))
+            return
+        if u.chat_id != chat.id:
+            # Refuse to delete uploads belonging to a different chat.
+            await _reply_html(update, _tr(update, context, "info_not_found", ref=upload_id))
+            return
+        freed = u.size_bytes
+        core.delete_upload(u.id)
+        await _reply_html(
+            update,
+            _tr(update, context, "cleanup_done", n=1, size=human_size(freed)),
+            kb.kb_idle(_lang(update, context)),
+        )
     else:
         log.warning("unknown callback_data: %r", data)
 

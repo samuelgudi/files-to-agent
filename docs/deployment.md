@@ -30,6 +30,18 @@ Available tags:
 - `vX.Y`, `vX` — major/minor floating tags
 - `sha-<short>` — specific commit (for debugging)
 
+### First-time setup (repo owner only)
+
+The first time the release workflow publishes an image to GHCR, the package is created as **private** by default. To make `docker pull` work for everyone (including the quickstart in this doc):
+
+1. Go to `https://github.com/samuelgudi?tab=packages`
+2. Click `files-to-agent`
+3. Package settings → "Change visibility" → Public
+
+Also verify the workflow has push permission: repo Settings → Actions → General → Workflow permissions → "Read and write permissions". The workflow YAML already declares `permissions: packages: write`, but org-level policy can override.
+
+These are one-time steps. Skip if your fork is intended to stay private.
+
 ### Build from source (development)
 
 ```bash

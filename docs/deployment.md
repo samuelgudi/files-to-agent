@@ -55,7 +55,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 ### Networking
 
-The agent (Hermes / Agent) container should join the same `agent-net` network. From the agent it reaches the resolver at `http://files-to-agent:8080`. The staging files appear in `./data/staging/` on the host — mount the same path into the agent container so it can read them.
+The agent container (e.g. a Hermes deployment) should join the same `agent-net` network. From the agent it reaches the resolver at `http://files-to-agent:8080`. The staging files appear in `./data/staging/` on the host — mount the same path into the agent container so it can read them.
 
 Example agent-side compose snippet:
 ```yaml
@@ -72,7 +72,7 @@ networks:
 
 The agent then receives upload paths like `/staging/<id>/<file>`.
 
-## 2. process-compose (lightweight, e.g. WSL-host WSL)
+## 2. process-compose (lightweight, e.g. WSL)
 
 Prerequisites: Python 3.12+, [uv](https://docs.astral.sh/uv/), [process-compose](https://github.com/F1bonacc1/process-compose).
 
@@ -86,7 +86,7 @@ uv sync
 process-compose up
 ```
 
-The resolver listens on `127.0.0.1:8080`. The host-local agent (e.g. Agent in WSL) calls it directly. `data/staging/` is on the host filesystem.
+The resolver listens on `127.0.0.1:8080`. The host-local agent calls it directly. `data/staging/` is on the host filesystem.
 
 ## 3. Standalone Python
 

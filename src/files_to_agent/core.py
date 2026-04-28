@@ -157,6 +157,16 @@ class Core:
         self.conn.execute("UPDATE uploads SET name=? WHERE id=?", (new_name, u.id))
         return self.get_upload(u.id)
 
+    # ---------- context ----------
+
+    def set_context(self, ref: str, context_text: str | None) -> Upload:
+        u = self.find_by_ref(ref)
+        self.conn.execute(
+            "UPDATE uploads SET context=? WHERE id=?",
+            (context_text, u.id),
+        )
+        return self.get_upload(u.id)
+
     # ---------- usage ----------
 
     def mark_used(

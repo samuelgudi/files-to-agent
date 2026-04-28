@@ -19,20 +19,6 @@ class VersionInfo:
     is_git: bool
 
 
-def _read_pyproject_version() -> str:
-    """Legacy helper kept for backward compat with existing tests.
-
-    Prefer _read_distribution_version() for new code — it works in containers.
-    """
-    pp = PROJECT_ROOT / "pyproject.toml"
-    if not pp.exists():
-        return "unknown"
-    import tomllib
-    with pp.open("rb") as f:
-        data = tomllib.load(f)
-    return str(data.get("project", {}).get("version", "unknown"))
-
-
 def _read_distribution_version() -> str:
     """Read the version string from packaging metadata.
 

@@ -9,12 +9,6 @@ from files_to_agent import updater, version
 # ---------- version.py ----------
 
 
-def test_read_pyproject_version_returns_string() -> None:
-    v = version._read_pyproject_version()
-    assert isinstance(v, str)
-    assert v != ""
-
-
 def test_read_version_from_metadata() -> None:
     """version.py should resolve the version via importlib.metadata, not pyproject.toml."""
     from files_to_agent import version as v

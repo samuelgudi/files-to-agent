@@ -15,6 +15,36 @@ def test_read_pyproject_version_returns_string() -> None:
     assert v != ""
 
 
+def test_read_version_from_metadata() -> None:
+    """version.py should resolve the version via importlib.metadata, not pyproject.toml."""
+    from files_to_agent import version as v
+
+    info = v.get_version_info(check_upstream=False)
+    # In a checkout-with-uv-sync run, this should be the pyproject version.
+    # The exact value isn't asserted (it changes per release), but it must
+    # NOT be "unknown" — that would indicate a packaging-metadata miss.
+    assert info.version != "unknown", "importlib.metadata resolution failed"
+    # And it must be a sane semver-ish string.
+    assert info.version[0].isdigit() or info.version.startswith("v")
+
+
+def test_commit_sha_from_env(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """When FILES_TO_AGENT_COMMIT_SHA is set, commit_sha() returns it."""
+    from files_to_agent import version as v
+
+    monkeypatch.setenv("FILES_TO_AGENT_COMMIT_SHA", "abc1234")
+    assert v.commit_sha() == "abc1234"
+
+
+def test_commit_sha_falls_back_to_git(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """When the env var is unset, commit_sha() falls back to short_sha (git)."""
+    from files_to_agent import version as v
+
+    monkeypatch.delenv("FILES_TO_AGENT_COMMIT_SHA", raising=False)
+    monkeypatch.setattr(v, "short_sha", lambda: "deadbee")
+    assert v.commit_sha() == "deadbee"
+
+
 def test_short_sha_returns_string() -> None:
     sha = version.short_sha()
     assert isinstance(sha, str)

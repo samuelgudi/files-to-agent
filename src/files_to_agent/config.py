@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     resolver_port: int = Field(8080, alias="RESOLVER_PORT")
     resolver_auth: Literal["none", "apikey"] = Field("none", alias="RESOLVER_AUTH")
     resolver_api_key: str | None = Field(None, alias="RESOLVER_API_KEY")
+    bot_lang: Literal["it", "en"] = Field("it", alias="BOT_LANG")
 
     max_disk_bytes: int = Field(16_106_127_360, alias="MAX_DISK_BYTES")
     max_upload_size_bytes: int = Field(2_147_483_648, alias="MAX_UPLOAD_SIZE_BYTES")
@@ -62,7 +63,6 @@ class Settings(BaseSettings):
     @classmethod
     def settings_customise_sources(cls, settings_cls: type, **kwargs: Any) -> tuple:  # type: ignore[override]
         init_settings = kwargs.get("init_settings")
-        env_settings = kwargs.get("env_settings")
         dotenv_settings = kwargs.get("dotenv_settings")
         secrets_settings = kwargs.get("secrets_settings")
         # Replace default env source with our comma-aware subclass.

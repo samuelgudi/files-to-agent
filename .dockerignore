@@ -1,0 +1,32 @@
+# Version control
+.git
+.github
+.gitignore
+.gitattributes
+
+# Local virtualenvs / caches
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+.DS_Store
+Thumbs.db
+
+# Project
+data/
+update-flag/
+.env
+.env.*
+!.env.example
+docs/
+tests/

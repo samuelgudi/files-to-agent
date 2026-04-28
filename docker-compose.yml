@@ -1,6 +1,7 @@
 services:
   files-to-agent:
     image: ghcr.io/samuelgudi/files-to-agent:latest
+    pull_policy: always
     container_name: files-to-agent
     restart: unless-stopped
     env_file: .env

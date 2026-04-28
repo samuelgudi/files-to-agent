@@ -1,10 +1,14 @@
-# FilesToAgent
+# files-to-agent
 
-A Telegram-side staging bot that holds files for AI agents until they're explicitly consumed.
+[![CI](https://github.com/samuelgudi/files-to-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelgudi/files-to-agent/actions/workflows/ci.yml)
+[![Release](https://github.com/samuelgudi/files-to-agent/actions/workflows/release.yml/badge.svg)](https://github.com/samuelgudi/files-to-agent/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Problem.** AI agents that talk to you over Telegram (Hermes, OpenClaw, custom Claude wrappers) treat every uploaded file as a turn — the LLM processes it, costs tokens, and may misuse it later. There's no clean way to say "hold these three files for the email I'm about to compose."
+> A Telegram-side staging bot that holds files for AI agents until they're explicitly consumed.
 
-**FilesToAgent.** A separate Telegram bot is your file-staging surface. You upload files into named, ID-tracked sessions (`/nuova` → drop files → `/conferma`). The bot stores them on disk and assigns each session a short ID. You hand the ID to your AI agent ("draft this email; ID: `k7m2p9x4`"). The agent fetches the files via a small HTTP resolver, attaches them, and the bot logs every use.
+**Why this exists:** AI agents that talk to you over Telegram (Hermes, OpenClaw, custom Claude wrappers) treat every uploaded file as a turn — the LLM processes it, costs tokens, and may misuse it later. There's no clean way to say "hold these three files for the email I'm about to compose."
+
+**files-to-agent** is a separate Telegram bot that acts as your file-staging surface. You upload files into named, ID-tracked sessions (`/nuova` → drop files → `/conferma`). The bot stores them on disk and assigns each session a short ID. You hand the ID to your AI agent ("draft this email; ID: `k7m2p9x4`"). The agent fetches the files via a small HTTP resolver, attaches them, and the bot logs every use.
 
 The agent never sees uploaded file contents until you tell it to. The bot can't be talked into attaching the wrong file because the ID-bound session is the only thing it knows about.
 
@@ -142,6 +146,14 @@ uv run pytest
 uv run ruff check src tests
 ```
 
+## Status
+
+This is a personal project I run for myself, but it's MIT-licensed and stable enough for others to use. Breaking changes are rare and gated through major-version bumps. Pre-1.0 means I reserve the right to make small breaking changes if I discover a better design — but I'll document them in the changelog and migration guides.
+
+## Contributing
+
+PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [SECURITY.md](SECURITY.md) for vulnerability disclosure.
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE) © Samuel Gudi

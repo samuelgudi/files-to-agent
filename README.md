@@ -23,18 +23,29 @@ The agent never sees uploaded file contents until you tell it to. The bot can't 
 
 ## Quick start
 
-See [docs/deployment.md](docs/deployment.md) for full instructions. TL;DR with Docker:
+The fastest way to get a bot running — no source clone needed:
 
 ```bash
-git clone <repo> files-to-agent
-cd files-to-agent
-cp .env.example .env
-$EDITOR .env  # set BOT_TOKEN, BOT_ALLOWED_USER_IDS
+mkdir files-to-agent && cd files-to-agent
+curl -O https://raw.githubusercontent.com/samuelgudi/files-to-agent/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/samuelgudi/files-to-agent/main/.env.example
+mv .env.example .env
+$EDITOR .env  # set BOT_TOKEN and BOT_ALLOWED_USER_IDS
 docker network create agent-net
-docker compose up -d --build
+docker compose up -d
 ```
 
-Mount `./data/staging` into your agent container so it can read the files.
+The image is pulled from `ghcr.io/samuelgudi/files-to-agent:latest`. Mount `./data/staging` into your agent container so it can read the files.
+
+To pin a specific version, edit `docker-compose.yml`'s `image:` line:
+
+```yaml
+image: ghcr.io/samuelgudi/files-to-agent:v0.1.0
+```
+
+Updating is `docker compose pull && docker compose up -d`. For automatic updates, use [Watchtower](https://containrrr.dev/watchtower/).
+
+For local development (build from source), see [docs/deployment.md](docs/deployment.md).
 
 ## Telegram commands
 

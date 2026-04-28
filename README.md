@@ -15,7 +15,9 @@ The agent never sees uploaded file contents until you tell it to. The bot can't 
 - Free-text context per upload (`/contesto`) — agent reads it to understand intent without seeing files
 - Rename blocked after first use → no in-flight reference drift; context is *not* blocked (post-hoc notes welcome)
 - Activity log: every agent use is recorded with action + JSON details
-- Bilingual UI (Italian default, English optional via `BOT_LANG=en`)
+- Inline-keyboard UX — every state has the right buttons (no command memorization)
+- Bilingual commands and UI — every command works in both languages (`/nuova` ≡ `/new`); per-chat language preference persisted to SQLite, switchable via `/lingua` button
+- Self-update — `/version` checks origin, `/update` pulls and restarts (git checkouts) or signals the host helper script (Docker)
 - Three deploy modes: Docker (primary), process-compose (light), standalone Python
 - Optional bearer-token auth on the resolver — off by default, since on-host deploys are network-isolated
 
@@ -36,23 +38,45 @@ Mount `./data/staging` into your agent container so it can read the files.
 
 ## Telegram commands
 
-| Command | Effect |
-|---|---|
-| `/start` | Welcome + command list |
-| `/nuova` | Start new draft session |
-| `/conferma` | Finalize active draft → returns ID |
-| `/annulla` | Discard active draft |
-| `/rinomina <nome>` | Rename active draft |
-| `/rinomina <id\|nome> <nuovo>` | Rename arbitrary upload (blocked after use) |
-| `/contesto <testo>` | Set context on the active draft |
-| `/contesto <id\|nome> [testo]` | Set/clear context on any upload (allowed even after use) |
-| `/lista` | List uploads for this chat |
-| `/info <id\|nome>` | Detailed info + context + usage history |
-| `/pulizia` | Show top-10 oldest + biggest |
-| `/pulizia <N>g` | Delete uploads older than N days |
-| `/pulizia <id\|nome>` | Delete one upload |
+Every command works in both Italian and English.
 
-The bot UI is bilingual: set `BOT_LANG=it` (default) or `BOT_LANG=en`. Command names stay Italian regardless.
+| Italian | English | Effect |
+|---|---|---|
+| `/start` | `/start` | Welcome + main inline keyboard |
+| `/help` | `/help` | Detailed reference with examples |
+| `/nuova` | `/new` | Start new draft session |
+| `/conferma` | `/confirm` | Finalize active draft → returns ID (monospace, tap to copy) |
+| `/annulla` | `/cancel` | Discard active draft (or cancel a pending input prompt) |
+| `/rinomina <nome>` | `/rename <name>` | Rename active draft |
+| `/rinomina <ref> <nuovo>` | `/rename <ref> <new>` | Rename arbitrary upload (blocked after use) |
+| `/contesto <testo>` | `/context <text>` | Set context on the active draft |
+| `/contesto <ref> [testo]` | `/context <ref> [text]` | Set/clear context on any upload |
+| `/lista` | `/list` | List uploads for this chat |
+| `/info <ref>` | `/info <ref>` | Detailed info + context + usage history |
+| `/pulizia` | `/cleanup` | Show top-10 oldest + biggest |
+| `/pulizia <N>g` | `/cleanup <N>g` | Delete uploads older than N days |
+| `/pulizia <ref>` | `/cleanup <ref>` | Delete one upload |
+| `/lingua` | `/language` | Switch between Italian and English (per-chat) |
+| `/version` | `/version` | Show current version + check upstream (owner-only) |
+| `/update` | `/update` | Pull and restart the bot (owner-only) |
+
+`BOT_LANG` sets the default for new chats. Each chat can then switch independently via `/lingua` — the choice is persisted in SQLite and survives restarts.
+
+### Inline keyboards
+
+After every reply the bot shows the buttons appropriate to the current state — there's no need to remember commands. The slash menu (the `/` icon next to the input box) is also auto-populated, in Italian or English depending on the user's Telegram client locale.
+
+## Updates
+
+`/version` reports the current commit, deploy mode, and how many commits behind `origin/main` you are. If there are new commits, the reply includes an **Update now** button.
+
+`/update` (or the button) handles the update according to deploy mode:
+
+- **process-compose / systemd / any supervised git checkout** — runs `git fetch && git reset --hard origin/main && uv sync`, then exits. The supervisor restarts the bot. DB schema migrations run on startup.
+- **Bare `python -m`** (no supervisor) — refuses with a clear message: the bot would die without auto-restart. Update manually.
+- **Docker** — drops a flag file in a mounted volume; a small host-side watcher script (`scripts/update-host.sh`) sees the flag and runs `docker compose pull && docker compose up -d`. See [docs/deployment.md](docs/deployment.md) for setup.
+
+A daily check at 09:00 UTC fetches `origin/main` and DMs the owner if new commits are available. Disable with `UPDATE_CHECK_DAILY=false`.
 
 ## Resolver HTTP API
 

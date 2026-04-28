@@ -6,6 +6,7 @@ processes:
     working_dir: .
     environment:
       - "PYTHONPATH=src"
+      - "FILES_TO_AGENT_SUPERVISED=1"
     is_daemon: false
     availability:
       restart: always

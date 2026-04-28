@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS usage_log (
     action       TEXT NOT NULL,
     details_json TEXT
 );
+CREATE TABLE IF NOT EXISTS chat_settings (
+    chat_id  INTEGER PRIMARY KEY,
+    lang     TEXT NOT NULL DEFAULT 'it'
+             CHECK (lang IN ('it','en'))
+);
 CREATE INDEX IF NOT EXISTS idx_uploads_chat_status ON uploads(chat_id, status);
 CREATE INDEX IF NOT EXISTS idx_uploads_status     ON uploads(status);
 CREATE INDEX IF NOT EXISTS idx_uploads_created_at ON uploads(created_at);

@@ -48,3 +48,24 @@ def test_schema_has_context_column(tmp_path: Path) -> None:
     init_schema(conn)
     cols = {r[1] for r in conn.execute("PRAGMA table_info(uploads)").fetchall()}
     assert "context" in cols
+
+
+def test_chat_settings_table_created(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "x.db")
+    init_schema(conn)
+    tables = [
+        r[0]
+        for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    ]
+    assert "chat_settings" in tables
+
+
+def test_chat_settings_lang_check_constraint(tmp_path: Path) -> None:
+    conn = connect(tmp_path / "x.db")
+    init_schema(conn)
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO chat_settings (chat_id, lang) VALUES (1, 'fr')"
+        )

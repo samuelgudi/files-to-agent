@@ -3,7 +3,7 @@ import pytest
 from files_to_agent.messages import MESSAGES, t
 
 REQUIRED_KEYS = {
-    "welcome", "not_authorized",
+    "welcome", "help", "not_authorized",
     "session_started", "session_already_active",
     "no_active_session",
     "file_received", "file_too_big", "disk_full",
@@ -12,8 +12,10 @@ REQUIRED_KEYS = {
     "context_set", "context_cleared", "context_usage",
     "list_empty", "list_header", "list_row",
     "info_not_found", "info_block", "info_no_usage",
-    "pulizia_header", "pulizia_confirm", "pulizia_done",
+    "cleanup_header", "cleanup_done",
     "disk_warning",
+    "language_prompt", "language_set_it", "language_set_en",
+    "version_block", "version_up_to_date",
 }
 
 

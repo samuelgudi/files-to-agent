@@ -9,6 +9,9 @@ services:
       - agent-net
     volumes:
       - ./data:/data
+      # Update-flag volume — bot writes ./update-flag/update.requested
+      # which the host script (scripts/update-host.sh) polls.
+      - ./update-flag:/var/lib/files-to-agent
     expose:
       - "8080"
 

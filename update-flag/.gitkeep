@@ -1,0 +1,3 @@
+# Mounted into the bot container at /var/lib/files-to-agent.
+# The bot writes update.requested here when /update is invoked in Docker mode.
+# scripts/update-host.sh polls this directory.

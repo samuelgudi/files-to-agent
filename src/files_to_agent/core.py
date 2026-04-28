@@ -257,3 +257,20 @@ class Core:
         self.storage.delete_folder(u.id)
         self.conn.execute("DELETE FROM uploads WHERE id=?", (u.id,))
         # usage_log rows cascade via FK ON DELETE CASCADE
+
+    # ---------- chat settings ----------
+
+    def get_chat_lang(self, chat_id: int) -> str | None:
+        row = self.conn.execute(
+            "SELECT lang FROM chat_settings WHERE chat_id=?", (chat_id,)
+        ).fetchone()
+        return row["lang"] if row else None
+
+    def set_chat_lang(self, chat_id: int, lang: str) -> None:
+        if lang not in ("it", "en"):
+            raise ValueError(f"unsupported lang: {lang}")
+        self.conn.execute(
+            "INSERT INTO chat_settings (chat_id, lang) VALUES (?, ?) "
+            "ON CONFLICT(chat_id) DO UPDATE SET lang=excluded.lang",
+            (chat_id, lang),
+        )

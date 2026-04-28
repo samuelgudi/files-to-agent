@@ -133,3 +133,48 @@ async def test_media_without_active_session_replies_hint(core: Core) -> None:
     await handle_media(upd, ctx)
     msg = upd.message.reply_text.call_args[0][0]
     assert "Nessun upload attivo" in msg
+
+
+# --- Task 13: /conferma + /annulla ---
+
+async def test_conferma_finalizes_session(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_conferma
+
+    u = core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10, text="/conferma")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_conferma(upd, ctx)
+
+    refreshed = core.get_upload(u.id)
+    assert refreshed.status.value == "confirmed"
+    msg = upd.message.reply_text.call_args[0][0]
+    assert u.id in msg
+
+
+async def test_conferma_no_session(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_conferma
+
+    upd = _fake_update(user_id=1, chat_id=10, text="/conferma")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_conferma(upd, ctx)
+    assert "Nessun upload attivo" in upd.message.reply_text.call_args[0][0]
+
+
+async def test_annulla_discards_session(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_annulla
+
+    core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10, text="/annulla")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_annulla(upd, ctx)
+
+    assert core.get_active_draft(chat_id=10) is None
+
+
+async def test_annulla_no_session(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_annulla
+
+    upd = _fake_update(user_id=1, chat_id=10, text="/annulla")
+    ctx = _fake_context(core, allowed=[1])
+    await handle_annulla(upd, ctx)
+    assert "Nessun upload attivo" in upd.message.reply_text.call_args[0][0]

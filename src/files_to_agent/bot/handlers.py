@@ -133,17 +133,17 @@ async def handle_conferma(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text(_t(context, "no_active_session"))
         return
     confirmed = core.confirm_upload(draft.id)
-    await update.message.reply_text(
-        _t(
-            context,
-            "session_confirmed",
-            id=confirmed.id,
-            name=confirmed.name or "—",
-            context=confirmed.context or "—",
-            count=confirmed.file_count,
-            size=human_size(confirmed.size_bytes),
-        )
+    lang = context.bot_data.get("bot_lang", "it")
+    msg = t(
+        "session_confirmed",
+        lang,
+        id=confirmed.id,
+        name=confirmed.name or "—",
+        context=confirmed.context or "—",
+        count=confirmed.file_count,
+        size=human_size(confirmed.size_bytes),
     )
+    await update.message.reply_text(msg)
 
 
 @require_allowed_user
@@ -231,10 +231,11 @@ async def handle_contesto(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         text = " ".join(args).strip() or None
         updated = core.set_context(draft.id, text)
 
+    lang = context.bot_data.get("bot_lang", "it")
     if updated.context is None:
-        await update.message.reply_text(_t(context, "context_cleared"))
+        await update.message.reply_text(t("context_cleared", lang))
     else:
-        await update.message.reply_text(_t(context, "context_set", context=updated.context))
+        await update.message.reply_text(t("context_set", lang, context=updated.context))
 
 
 @require_allowed_user
@@ -288,10 +289,11 @@ async def handle_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
     else:
         usage_lines = _t(context, "info_no_usage")
+    lang = context.bot_data.get("bot_lang", "it")
     await update.message.reply_text(
-        _t(
-            context,
+        t(
             "info_block",
+            lang,
             id=u.id,
             name=u.name or "—",
             status=u.status.value,

@@ -78,8 +78,15 @@ _COMMANDS_EN: list[BotCommand] = [
 ]
 
 
-async def _post_init(app: Application) -> None:
-    """Register the slash menu in both languages."""
+async def register_slash_menu(app: Application) -> None:
+    """Register the bilingual slash-command menu with Telegram.
+
+    Called explicitly from runner.py after Application.initialize(). We don't
+    use Application.builder().post_init(...) because PTB only invokes that
+    hook from Application.run_polling() / run_webhook(), and our runner uses
+    manual lifecycle (initialize + start + updater.start_polling) because the
+    bot is co-hosted with the uvicorn FastAPI resolver.
+    """
     try:
         await app.bot.set_my_commands(_COMMANDS_IT)  # default
         await app.bot.set_my_commands(_COMMANDS_EN, language_code="en")
@@ -111,7 +118,7 @@ async def _daily_update_check(context) -> None:  # type: ignore[no-untyped-def]
 
 
 def build_application(settings: Settings, core: Core) -> Application:
-    builder = Application.builder().token(settings.bot_token).post_init(_post_init)
+    builder = Application.builder().token(settings.bot_token)
     app = builder.build()
     app.bot_data["core"] = core
     app.bot_data["allowed_user_ids"] = settings.bot_allowed_user_ids

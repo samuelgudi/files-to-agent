@@ -77,3 +77,59 @@ async def test_start_in_english(core: Core) -> None:
     ctx = _fake_context(core, allowed=[1], lang="en")
     await handle_start(upd, ctx)
     assert "Hi" in upd.message.reply_text.call_args[0][0]
+
+
+# --- Task 12: media intake ---
+
+async def test_media_during_draft_saves_file(core: Core, tmp_path: Path) -> None:
+    from files_to_agent.bot.handlers import handle_media
+
+    core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10)
+
+    file_obj = AsyncMock()
+
+    async def _download(path: Path) -> None:
+        Path(path).write_bytes(b"hello")
+
+    file_obj.download_to_drive.side_effect = _download
+    upd.message.document = MagicMock()
+    upd.message.document.file_id = "xyz"
+    upd.message.document.file_name = "report.pdf"
+    upd.message.document.file_size = 5
+    upd.message.photo = []
+    upd.message.video = None
+    upd.message.audio = None
+    upd.message.voice = None
+
+    ctx = _fake_context(core, allowed=[1])
+    ctx.bot.get_file = AsyncMock(return_value=file_obj)
+    ctx.bot_data["max_upload_size_bytes"] = 1024
+
+    await handle_media(upd, ctx)
+
+    draft = core.get_active_draft(chat_id=10)
+    assert draft.file_count == 1
+    assert draft.size_bytes == 5
+
+
+async def test_media_without_active_session_replies_hint(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_media
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    upd.message.document = MagicMock()
+    upd.message.document.file_id = "xyz"
+    upd.message.document.file_name = "x.bin"
+    upd.message.document.file_size = 1
+    upd.message.photo = []
+    upd.message.video = None
+    upd.message.audio = None
+    upd.message.voice = None
+
+    ctx = _fake_context(core, allowed=[1])
+    ctx.bot.get_file = AsyncMock()
+    ctx.bot_data["max_upload_size_bytes"] = 1024
+
+    await handle_media(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert "Nessun upload attivo" in msg

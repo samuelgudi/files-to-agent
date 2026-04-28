@@ -80,7 +80,9 @@ def test_write_docker_flag_writes_to_tmp(tmp_path, monkeypatch) -> None:  # type
 
 
 def test_find_uv_returns_which_result_when_available(monkeypatch) -> None:  # type: ignore[no-untyped-def]
-    monkeypatch.setattr(updater.shutil, "which", lambda name: "/some/path/uv" if name == "uv" else None)
+    monkeypatch.setattr(
+        updater.shutil, "which", lambda name: "/some/path/uv" if name == "uv" else None
+    )
     assert updater._find_uv() == "/some/path/uv"
 
 
@@ -112,3 +114,36 @@ def test_find_uv_returns_none_when_nothing_found(tmp_path, monkeypatch) -> None:
     # string that points to /usr/local/bin/uv.
     found = updater._find_uv()
     assert found is None or found == "/usr/local/bin/uv"
+
+
+def test_run_git_update_succeeds_when_uv_missing(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """Reproduces the Agent bug: git fetch + reset succeed, uv missing must not fail update."""
+    from files_to_agent import updater as updater_mod
+
+    # Force is_git_checkout() to True so we don't bail early.
+    monkeypatch.setattr(updater_mod, "is_git_checkout", lambda: True)
+    # Pretend uv is missing entirely.
+    monkeypatch.setattr(updater_mod, "_find_uv", lambda: None)
+
+    calls: list[list[str]] = []
+
+    class _FakeCompleted:
+        def __init__(self, returncode: int = 0, stdout: str = "", stderr: str = "") -> None:
+            self.returncode = returncode
+            self.stdout = stdout
+            self.stderr = stderr
+
+    def _fake_run(cmd, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(list(cmd))
+        # The first two calls are git fetch / git reset — succeed.
+        return _FakeCompleted(returncode=0, stdout="HEAD is now at abcdef\n")
+
+    monkeypatch.setattr(updater_mod.subprocess, "run", _fake_run)
+
+    result = updater_mod.run_git_update()
+
+    assert result.ok is True, f"expected ok=True, got {result}"
+    # Verify uv was NOT invoked — only the two git commands ran.
+    invoked_executables = [c[0] for c in calls]
+    assert "uv" not in invoked_executables
+    assert any("git" in c for c in invoked_executables)

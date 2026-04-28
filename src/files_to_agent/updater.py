@@ -99,11 +99,15 @@ def run_git_update() -> UpdateResult:
         )
         if r2.returncode != 0:
             return UpdateResult(False, detect_mode(), f"git reset: {r2.stderr.strip()}")
-        # uv sync if available — best effort, don't fail update if uv missing
-        subprocess.run(
-            ["uv", "sync", "--frozen"],
-            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=180, check=False,
-        )
+        # uv sync if available — best effort, don't fail update if uv missing.
+        # Supervised processes often have a stripped PATH; _find_uv probes
+        # common install locations as a fallback.
+        uv_path = _find_uv()
+        if uv_path is not None:
+            subprocess.run(
+                [uv_path, "sync", "--frozen"],
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=180, check=False,
+            )
         return UpdateResult(True, detect_mode(), r2.stdout.strip())
     except (FileNotFoundError, subprocess.TimeoutExpired) as e:
         return UpdateResult(False, detect_mode(), str(e))

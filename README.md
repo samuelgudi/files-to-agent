@@ -90,6 +90,28 @@ Both endpoints use bearer auth when `RESOLVER_AUTH=apikey`. `/healthz` is always
 
 All settings via env vars. See `.env.example` for the full list with defaults.
 
+## Hermes Agent skill
+
+The repo ships a [Hermes Agent](https://github.com/NousResearch/hermes-agent) skill in `skills/files-to-agent/SKILL.md`. Drop it into your Hermes skills directory and the agent will know how to look up staged batches and attach files when you reference an ID.
+
+Install:
+
+```bash
+# For a docker-compose Hermes deploy with ~/.hermes:/opt/data mounted:
+cp -r skills/files-to-agent ~/.hermes/skills/
+
+# For a local Hermes install (e.g. WSL):
+cp -r skills/files-to-agent ~/.hermes/skills/
+```
+
+Set the resolver URL via env var on the Hermes side (defaults to `http://127.0.0.1:8080`):
+
+```bash
+export FILESTOAGENT_RESOLVER_URL=http://127.0.0.1:18080  # or https://filestoagent.localhost
+```
+
+The skill is generic — works with any Hermes deployment that can reach the resolver.
+
 ## Development
 
 ```bash

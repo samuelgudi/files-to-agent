@@ -48,3 +48,15 @@ def test_t_unknown_lang_falls_back_to_italian() -> None:
 def test_t_unknown_key_returns_marker() -> None:
     out = t("nonexistent_key", "it")
     assert "nonexistent_key" in out
+
+
+def test_welcome_uses_file_to_agent_branding_it() -> None:
+    out = t("welcome", "it")
+    assert "File To Agent Bot" in out
+    assert "staging" not in out.lower()
+
+
+def test_welcome_uses_file_to_agent_branding_en() -> None:
+    out = t("welcome", "en")
+    assert "File To Agent Bot" in out
+    assert "staging" not in out.lower()

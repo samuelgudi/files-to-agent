@@ -4,7 +4,7 @@ from typing import Any
 
 _IT: dict[str, str] = {
     "welcome": (
-        "👋 Ciao! Sono il bot di staging file.\n\n"
+        "👋 Ciao! Sono il File To Agent Bot.\n\n"
         "Usa i bottoni qui sotto per iniziare, oppure /help per la guida completa."
     ),
     "help": (
@@ -183,7 +183,7 @@ _IT: dict[str, str] = {
 
 _EN: dict[str, str] = {
     "welcome": (
-        "👋 Hi! I'm the file staging bot.\n\n"
+        "👋 Hi! I'm the File To Agent Bot.\n\n"
         "Use the buttons below to start, or /help for the full guide."
     ),
     "help": (

@@ -178,3 +178,59 @@ async def test_annulla_no_session(core: Core) -> None:
     ctx = _fake_context(core, allowed=[1])
     await handle_annulla(upd, ctx)
     assert "Nessun upload attivo" in upd.message.reply_text.call_args[0][0]
+
+
+# --- Task 14: /rinomina ---
+
+async def test_rinomina_one_arg_renames_active_draft(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_rinomina
+
+    u = core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10, text="/rinomina FattureAprile")
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["FattureAprile"]
+    await handle_rinomina(upd, ctx)
+
+    refreshed = core.get_upload(u.id)
+    assert refreshed.name == "FattureAprile"
+
+
+async def test_rinomina_two_args_renames_arbitrary(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_rinomina
+
+    u = core.create_upload(chat_id=10)
+    core.confirm_upload(u.id)
+    upd = _fake_update(user_id=1, chat_id=10, text=f"/rinomina {u.id} Foo")
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id, "Foo"]
+    await handle_rinomina(upd, ctx)
+
+    refreshed = core.get_upload(u.id)
+    assert refreshed.name == "Foo"
+
+
+async def test_rinomina_taken_name(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_rinomina
+
+    u1 = core.create_upload(chat_id=10)
+    core.rename_upload(u1.id, "X")
+    core.confirm_upload(u1.id)
+    core.create_upload(chat_id=10)
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["X"]
+    await handle_rinomina(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert "già in uso" in msg
+
+
+async def test_rinomina_no_active_draft_one_arg(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_rinomina
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["X"]
+    await handle_rinomina(upd, ctx)
+    msg = upd.message.reply_text.call_args[0][0]
+    assert "Nessun upload attivo" in msg

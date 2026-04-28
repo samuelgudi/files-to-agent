@@ -627,7 +627,9 @@ async def test_restart_bare_git_warns_no_supervisor(core: Core, monkeypatch) -> 
     called = {"exit": False}
 
     monkeypatch.setattr(handlers_mod, "detect_mode", lambda: "bare_git")
-    monkeypatch.setattr(handlers_mod, "schedule_self_exit", lambda: called.__setitem__("exit", True))
+    monkeypatch.setattr(
+        handlers_mod, "schedule_self_exit", lambda: called.__setitem__("exit", True)
+    )
 
     upd = _fake_update(user_id=1, chat_id=10)
     ctx = _fake_context(core, allowed=[1])

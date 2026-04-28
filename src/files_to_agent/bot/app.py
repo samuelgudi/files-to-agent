@@ -25,6 +25,7 @@ from files_to_agent.bot.handlers import (
     handle_new,
     handle_pending_text,
     handle_rename,
+    handle_restart,
     handle_start,
     handle_update,
     handle_version,
@@ -53,6 +54,7 @@ _COMMANDS_IT: list[BotCommand] = [
     BotCommand("lingua",   "Cambia lingua (italiano / english)"),
     BotCommand("version",  "Versione corrente e aggiornamenti"),
     BotCommand("update",   "Aggiorna il bot (solo proprietario)"),
+    BotCommand("riavvia",  "Riavvia il bot (solo proprietario)"),
     BotCommand("help",     "Guida ai comandi"),
     BotCommand("start",    "Mostra il menu principale"),
 ]
@@ -70,6 +72,7 @@ _COMMANDS_EN: list[BotCommand] = [
     BotCommand("language", "Change language (English / italiano)"),
     BotCommand("version",  "Current version and updates"),
     BotCommand("update",   "Update the bot (owner only)"),
+    BotCommand("restart",  "Restart the bot (owner only)"),
     BotCommand("help",     "Command reference"),
     BotCommand("start",    "Show the main menu"),
 ]
@@ -129,6 +132,7 @@ def build_application(settings: Settings, core: Core) -> Application:
     app.add_handler(CommandHandler(["lingua", "language"], handle_language))
     app.add_handler(CommandHandler(["version"], handle_version))
     app.add_handler(CommandHandler(["update"], handle_update))
+    app.add_handler(CommandHandler(["riavvia", "restart"], handle_restart))
 
     # Inline buttons.
     app.add_handler(CallbackQueryHandler(handle_callback))

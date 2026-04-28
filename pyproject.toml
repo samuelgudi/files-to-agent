@@ -24,6 +24,12 @@ dev = [
 [project.scripts]
 files-to-agent = "files_to_agent.__main__:main"
 
+[project.urls]
+Homepage = "https://github.com/samuelgudi/files-to-agent"
+Repository = "https://github.com/samuelgudi/files-to-agent"
+Issues = "https://github.com/samuelgudi/files-to-agent/issues"
+Changelog = "https://github.com/samuelgudi/files-to-agent/blob/main/CHANGELOG.md"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

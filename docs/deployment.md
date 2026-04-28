@@ -126,42 +126,36 @@ RESOLVER_API_KEY=<long-random-string>
 ```
 The agent must then send `Authorization: Bearer <key>` on every `/resolve` and `/use` call.
 
-## Self-update
+## Updating
 
-`/version` reports current version and pending upstream commits. `/update` (or the inline button) actually performs the update. Behaviour depends on deploy mode.
+The bot is a stateless container. Updates happen at the orchestrator layer.
 
-### process-compose / standalone with restart-on-exit
-
-The bot runs `git fetch && git reset --hard origin/main`, then `uv sync --frozen`, then exits. process-compose restarts it (`availability.restart: always` is already set).
-
-Flag the process as supervised so the bot does not refuse to update:
-
-- `process-compose.yaml` — already sets `FILES_TO_AGENT_SUPERVISED=1`.
-- systemd — set `Environment=FILES_TO_AGENT_SUPERVISED=1` in the unit, or rely on systemd's `INVOCATION_ID` (auto-detected).
-- bare `python -m` with no supervisor — `/update` refuses, since exiting would simply kill the bot.
-
-### Docker
-
-The bot can't `git pull` inside an immutable image. Instead, it drops a flag file at `/var/lib/files-to-agent/update.requested`, which `docker-compose.yml` mounts to `./update-flag/` on the host. A small host watcher script polls that file and runs `docker compose pull && docker compose up -d`.
-
-Install the host watcher (one-time):
+### Manual
 
 ```bash
-sudo cp scripts/update-host.sh /usr/local/bin/files-to-agent-update-host
-sudo chmod +x /usr/local/bin/files-to-agent-update-host
-
-# Edit the COMPOSE_DIR / FLAG_DIR in the unit to your install location.
-sudo cp scripts/files-to-agent-update-host.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now files-to-agent-update-host
+docker compose pull
+docker compose up -d
 ```
 
-Without the host watcher, `/update` returns the manual `docker compose pull && docker compose up -d` command for you to run on the host.
+### Automatic
 
-### Daily upstream check
+Run [Watchtower](https://containrrr.dev/watchtower/) on the host. It polls
+the registry for new image tags and restarts the container automatically.
 
-By default the bot polls `origin/main` once a day at 09:00 UTC. If new commits are available, the owner (the **first** id in `BOT_ALLOWED_USER_IDS`) gets a Telegram DM. Disable with:
-
-```ini
-UPDATE_CHECK_DAILY=false
+```bash
+docker run -d \
+  --name watchtower \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  containrrr/watchtower \
+  --interval 3600 \
+  files-to-agent
 ```
+
+If you're running with `image: ghcr.io/samuelgudi/files-to-agent:latest`,
+Watchtower picks up new pushes within the polling interval. If you're
+pinned to `:vX.Y.Z`, Watchtower won't update across versions — you bump
+the tag yourself.
+
+For non-Docker deploys (process-compose, standalone Python), update by
+re-running `git pull && uv sync` and bouncing the process. The `/restart`
+command does the bounce part for you on supervised runs.

@@ -17,7 +17,7 @@ The agent never sees uploaded file contents until you tell it to. The bot can't 
 - Activity log: every agent use is recorded with action + JSON details
 - Inline-keyboard UX — every state has the right buttons (no command memorization)
 - Bilingual commands and UI — every command works in both languages (`/nuova` ≡ `/new`); per-chat language preference persisted to SQLite, switchable via `/lingua` button
-- Self-update — `/version` checks origin, `/update` pulls and restarts (git checkouts) or signals the host helper script (Docker)
+- Stateless container — updates via orchestrator (Watchtower / `docker compose pull`); no in-process git operations
 - Three deploy modes: Docker (primary), process-compose (light), standalone Python
 - Optional bearer-token auth on the resolver — off by default, since on-host deploys are network-isolated
 
@@ -68,26 +68,13 @@ Every command works in both Italian and English.
 | `/pulizia <N>g` | `/cleanup <N>g` | Delete uploads older than N days |
 | `/pulizia <ref>` | `/cleanup <ref>` | Delete one upload |
 | `/lingua` | `/language` | Switch between Italian and English (per-chat) |
-| `/version` | `/version` | Show current version + check upstream (owner-only) |
-| `/update` | `/update` | Pull and restart the bot (owner-only) |
+| `/version` | `/version` | Show current version (owner-only) |
 
 `BOT_LANG` sets the default for new chats. Each chat can then switch independently via `/lingua` — the choice is persisted in SQLite and survives restarts.
 
 ### Inline keyboards
 
 After every reply the bot shows the buttons appropriate to the current state — there's no need to remember commands. The slash menu (the `/` icon next to the input box) is also auto-populated, in Italian or English depending on the user's Telegram client locale.
-
-## Updates
-
-`/version` reports the current commit, deploy mode, and how many commits behind `origin/main` you are. If there are new commits, the reply includes an **Update now** button.
-
-`/update` (or the button) handles the update according to deploy mode:
-
-- **process-compose / systemd / any supervised git checkout** — runs `git fetch && git reset --hard origin/main && uv sync`, then exits. The supervisor restarts the bot. DB schema migrations run on startup.
-- **Bare `python -m`** (no supervisor) — refuses with a clear message: the bot would die without auto-restart. Update manually.
-- **Docker** — drops a flag file in a mounted volume; a small host-side watcher script (`scripts/update-host.sh`) sees the flag and runs `docker compose pull && docker compose up -d`. See [docs/deployment.md](docs/deployment.md) for setup.
-
-A daily check at 09:00 UTC fetches `origin/main` and DMs the owner if new commits are available. Disable with `UPDATE_CHECK_DAILY=false`.
 
 ## Resolver HTTP API
 

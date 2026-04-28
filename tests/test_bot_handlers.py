@@ -234,3 +234,69 @@ async def test_rinomina_no_active_draft_one_arg(core: Core) -> None:
     await handle_rinomina(upd, ctx)
     msg = upd.message.reply_text.call_args[0][0]
     assert "Nessun upload attivo" in msg
+
+
+# --- Task 14B: /contesto ---
+
+async def test_contesto_one_arg_sets_active_draft(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_contesto
+
+    u = core.create_upload(chat_id=10)
+    upd = _fake_update(user_id=1, chat_id=10, text="/contesto Fatture aprile per Marco")
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = ["Fatture", "aprile", "per", "Marco"]
+    await handle_contesto(upd, ctx)
+
+    refreshed = core.get_upload(u.id)
+    assert refreshed.context == "Fatture aprile per Marco"
+
+
+async def test_contesto_with_ref_sets_arbitrary(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_contesto
+
+    u = core.create_upload(chat_id=10)
+    core.confirm_upload(u.id)
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id, "Contratto", "Marco"]
+    await handle_contesto(upd, ctx)
+
+    assert core.get_upload(u.id).context == "Contratto Marco"
+
+
+async def test_contesto_clear_with_ref_only(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_contesto
+
+    u = core.create_upload(chat_id=10)
+    core.set_context(u.id, "old context")
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id]
+    await handle_contesto(upd, ctx)
+
+    assert core.get_upload(u.id).context is None
+    assert "rimosso" in upd.message.reply_text.call_args[0][0]
+
+
+async def test_contesto_allowed_after_use(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_contesto
+
+    u = core.create_upload(chat_id=10)
+    core.confirm_upload(u.id)
+    core.mark_used(u.id, action="email_send", details=None)
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = [u.id, "post-hoc", "note"]
+    await handle_contesto(upd, ctx)
+
+    assert core.get_upload(u.id).context == "post-hoc note"
+
+
+async def test_contesto_no_args_shows_usage(core: Core) -> None:
+    from files_to_agent.bot.handlers import handle_contesto
+
+    upd = _fake_update(user_id=1, chat_id=10)
+    ctx = _fake_context(core, allowed=[1])
+    ctx.args = []
+    await handle_contesto(upd, ctx)
+    assert "Uso" in upd.message.reply_text.call_args[0][0]

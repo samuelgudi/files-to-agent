@@ -630,6 +630,24 @@ async def _run_update_flow(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await _reply_html(update, _tr(update, context, "update_no_supervisor"))
 
 
+@require_owner
+async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Exit the bot process so the supervisor restarts it.
+
+    Works on supervised_git (systemd / process-compose) and docker
+    (`restart: unless-stopped`). On bare_git / unknown there's no
+    supervisor to bring the bot back, so we refuse with the same warning
+    used by /update.
+    """
+    _clear_awaiting(context)
+    mode = detect_mode()
+    if mode in ("supervised_git", "docker"):
+        await _reply_html(update, _tr(update, context, "restart_starting"))
+        schedule_self_exit()
+        return
+    await _reply_html(update, _tr(update, context, "update_no_supervisor"))
+
+
 # ---------- callback dispatcher ----------
 
 

@@ -553,7 +553,7 @@ async def test_per_chat_lang_overrides_default(core: Core) -> None:
     assert "Hi" in _last_text(upd)
 
 
-# ---------- /version /update authorization ----------
+# ---------- /version authorization ----------
 
 
 async def test_version_owner_only(core: Core) -> None:

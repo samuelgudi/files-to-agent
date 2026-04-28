@@ -39,7 +39,7 @@ def require_allowed_user(fn: Handler) -> Handler:
 def require_owner(fn: Handler) -> Handler:
     """Stricter than allowed_user — only the FIRST id in allowed_user_ids.
 
-    The first id is treated as the bot owner (self-admin commands like /update).
+    The first id is treated as the bot owner (self-admin commands like /version, /restart).
     """
     @wraps(fn)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

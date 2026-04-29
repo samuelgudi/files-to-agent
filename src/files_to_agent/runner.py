@@ -10,6 +10,7 @@ from files_to_agent.bot.app import build_application, register_slash_menu
 from files_to_agent.config import Settings
 from files_to_agent.core import Core
 from files_to_agent.db import connect, init_schema
+from files_to_agent.logging_filter import install_redaction_filter
 from files_to_agent.resolver.api import build_app as build_resolver
 from files_to_agent.storage import StagingStorage
 
@@ -27,6 +28,7 @@ class Components:
 def build_components(settings: Settings | None = None) -> Components:
     settings = settings or Settings()
     logging.basicConfig(level=settings.log_level)
+    install_redaction_filter()
     conn = connect(settings.db_path)
     init_schema(conn)
     storage = StagingStorage(settings.staging_dir)

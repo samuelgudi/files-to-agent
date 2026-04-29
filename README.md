@@ -37,6 +37,15 @@ The agent never sees uploaded file contents until you reference them by ID. The 
 
 Two processes share the same SQLite + filesystem layer: a Telegram bot you talk to, and an HTTP resolver your agents call. The resolver is the only path agents have to the files; the bot is the only path you have to upload them.
 
+## Telegram bot setup (one-time)
+
+Before deploying, get a bot token and your numeric Telegram user ID:
+
+1. Chat with [@BotFather](https://t.me/BotFather) on Telegram, send `/newbot`, follow the prompts. Copy the token (looks like `1234567890:AAH...`).
+2. Get your numeric Telegram user ID from [@userinfobot](https://t.me/userinfobot) — send it any message; it replies with your ID.
+
+You'll use these as `BOT_TOKEN` and `BOT_ALLOWED_USER_IDS` in the next section.
+
 ## Quick start
 
 The fastest path — no source clone needed:
@@ -163,7 +172,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 ## Status
 
-Pre-1.0. Stable enough for production use, but minor breaking changes may land before v1.0 if a better design surfaces. All breaking changes are documented in [`CHANGELOG.md`](CHANGELOG.md) and gated through minor-version bumps until 1.0, then through major-version bumps after.
+Pre-1.0. Breaking changes possible until v1.0 — not recommended for production-critical workflows yet. All breaking changes are documented in [`CHANGELOG.md`](CHANGELOG.md) and gated through minor-version bumps until 1.0, then through major-version bumps after.
 
 ## Contributing
 

@@ -24,20 +24,27 @@ REDACTED = "[REDACTED]"
 
 
 class TokenRedactionFilter(logging.Filter):
-    """Replace Telegram-token-shaped substrings in a record's msg + args.
+    """Replace Telegram-token-shaped substrings in a record's formatted message.
 
-    Returns True so the record still propagates — we modify the payload,
-    we don't drop the record.
+    Calls record.getMessage() to fully format msg % args (which invokes
+    __str__ on every arg), then redacts. This catches tokens hidden inside
+    non-string args — notably httpx.URL objects, which is how httpx actually
+    logs Telegram URLs. After redaction the formatted string is written back
+    as record.msg with empty args, so the emitter doesn't re-format and undo
+    the redaction.
+
+    Returns True so the record still propagates.
     """
 
     def filter(self, record: logging.LogRecord) -> bool:
-        if isinstance(record.msg, str):
-            record.msg = TOKEN_PATTERN.sub(REDACTED, record.msg)
-        if record.args:
-            record.args = tuple(
-                TOKEN_PATTERN.sub(REDACTED, a) if isinstance(a, str) else a
-                for a in record.args
-            )
+        try:
+            formatted = record.getMessage()
+        except Exception:  # noqa: BLE001 — never let logging filtering crash the bot
+            return True
+        redacted = TOKEN_PATTERN.sub(REDACTED, formatted)
+        if redacted != formatted:
+            record.msg = redacted
+            record.args = ()
         return True
 
 

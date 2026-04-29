@@ -43,8 +43,57 @@ def test_filter_redacts_string_args() -> None:
         exc_info=None,
     )
     f.filter(record)
-    assert all(FAKE_TOKEN not in (a if isinstance(a, str) else "") for a in record.args)
-    assert any("[REDACTED]" in a for a in record.args if isinstance(a, str))
+    assert FAKE_TOKEN not in record.getMessage()
+    assert "[REDACTED]" in record.getMessage()
+
+
+def test_filter_redacts_object_args_via_str() -> None:
+    """Real-world: httpx logs URL *objects*, not strings.
+
+    Previous implementation only checked isinstance(arg, str) and let
+    URL objects slip through. The fix uses record.getMessage() which
+    invokes __str__ on every arg before redaction.
+    """
+    class FakeUrl:
+        def __init__(self, value: str) -> None:
+            self._value = value
+        def __str__(self) -> str:
+            return self._value
+
+    fake_url = FakeUrl(f"https://api.telegram.org/bot{FAKE_TOKEN}/getMe")
+    f = TokenRedactionFilter()
+    record = logging.LogRecord(
+        name="httpx", level=logging.INFO, pathname="", lineno=0,
+        msg="HTTP Request: %s %s", args=("POST", fake_url), exc_info=None,
+    )
+    f.filter(record)
+    assert FAKE_TOKEN not in record.getMessage()
+    assert "[REDACTED]" in record.getMessage()
+
+
+def test_filter_mimics_real_httpx_call() -> None:
+    """Reproduce the exact arg shape httpx uses: 5 positional args incl. URL object."""
+    class FakeUrl:
+        def __init__(self, value: str) -> None:
+            self._value = value
+        def __str__(self) -> str:
+            return self._value
+
+    fake_url = FakeUrl(f"https://api.telegram.org/bot{FAKE_TOKEN}/getUpdates")
+    f = TokenRedactionFilter()
+    # httpx logs as: 'HTTP Request: %s %s "HTTP/%s %d %s"' % (method, url, ver, status, reason)
+    record = logging.LogRecord(
+        name="httpx", level=logging.INFO, pathname="", lineno=0,
+        msg='HTTP Request: %s %s "HTTP/%s %d %s"',
+        args=("POST", fake_url, "1.1", 200, "OK"),
+        exc_info=None,
+    )
+    f.filter(record)
+    final = record.getMessage()
+    assert FAKE_TOKEN not in final
+    assert "[REDACTED]" in final
+    assert "POST" in final
+    assert "200" in final  # other args still preserved
 
 
 def test_filter_passes_through_clean_messages() -> None:
@@ -70,15 +119,16 @@ def test_filter_returns_true_so_record_is_emitted() -> None:
     assert f.filter(record) is True
 
 
-def test_filter_handles_non_string_args() -> None:
-    """Numeric / dict args should pass through untouched, not crash."""
+def test_filter_handles_non_string_args_without_crashing() -> None:
+    """Numeric args without tokens should not crash the filter and the
+    formatted message should be preserved."""
     f = TokenRedactionFilter()
     record = logging.LogRecord(
         name="x", level=logging.INFO, pathname="", lineno=0,
         msg="count=%d size=%d", args=(42, 1024), exc_info=None,
     )
     f.filter(record)
-    assert record.args == (42, 1024)
+    assert record.getMessage() == "count=42 size=1024"
 
 
 def test_install_redaction_filter_attaches_to_handlers(caplog) -> None:  # type: ignore[no-untyped-def]
